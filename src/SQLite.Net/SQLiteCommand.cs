@@ -1,6 +1,8 @@
 //
 // Copyright (c) 2012 Krueger Systems, Inc.
 // Copyright (c) 2013 Øystein Krog (oystein.krog@gmail.com)
+// Copyright (c) 2014 Benjamin Mayrarague
+//   - support for new types: XElement, DateTimeOffset, TimeSpan
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +26,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
+using System.Xml.Linq;
 using SQLite.Net.Interop;
 
 namespace SQLite.Net
@@ -251,6 +255,10 @@ namespace SQLite.Net
                 {
                     isqLite3Api.BindText16(stmt, index, (string) value, -1, NegativePointer);
                 }
+                else if (value is XElement)
+                {
+                    isqLite3Api.BindText16(stmt, index, (value as XElement).ToString(SaveOptions.DisableFormatting), -1, NegativePointer);
+                }
                 else if (value is Byte || value is UInt16 || value is SByte || value is Int16)
                 {
                     isqLite3Api.BindInt(stmt, index, Convert.ToInt32(value));
@@ -266,6 +274,14 @@ namespace SQLite.Net
                 else if (value is Single || value is Double || value is Decimal)
                 {
                     isqLite3Api.BindDouble(stmt, index, Convert.ToDouble(value));
+                }
+                else if (value is DateTimeOffset)
+                {
+                    isqLite3Api.BindText16(stmt, index, ((DateTimeOffset)value).ToString("u", CultureInfo.InvariantCulture), -1, NegativePointer);
+                }
+                else if (value is TimeSpan)
+                {
+                    isqLite3Api.BindInt64(stmt, index, ((TimeSpan)value).Ticks);
                 }
                 else if (value is DateTime)
                 {
@@ -324,6 +340,36 @@ namespace SQLite.Net
             {
                 return (float) _sqlitePlatform.SQLiteApi.ColumnDouble(stmt, index);
             }
+            if (clrType == typeof (DateTimeOffset))
+            {
+                var text = _sqlitePlatform.SQLiteApi.ColumnText16(stmt, index);
+#if false
+                //Bug in mono 2.x
+                return DateTimeOffset.ParseExact(text, "u", CultureInfo.InvariantCulture);
+#else
+                DateTimeOffset v;
+                if (DateTimeOffset.TryParseExact(text, "u", CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out v))
+                    return v;
+
+                try
+                {
+                    return DateTimeOffset.Parse(text, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind);
+                }
+                catch(Exception e)
+                {
+                    //Log.Error("SQLite", "Can not parse '" + text+"' to datetimeoffset");
+                    //Log.Error("SQLite", e.Message);
+                    if (Nullable.GetUnderlyingType(clrType) != null)
+                        return null;
+
+                    return DateTimeOffset.MinValue;
+                }
+#endif
+            }
+            if (clrType == typeof(TimeSpan))
+            {
+                return new TimeSpan(_sqlitePlatform.SQLiteApi.ColumnInt64(stmt, index));
+            }
             if (clrType == typeof (DateTime))
             {
                 if (_conn.StoreDateTimeAsTicks)
@@ -374,6 +420,12 @@ namespace SQLite.Net
                 string text = _sqlitePlatform.SQLiteApi.ColumnText16(stmt, index);
                 return new Guid(text);
             }
+            if (clrType == typeof(XElement))
+            {
+                var text = _sqlitePlatform.SQLiteApi.ColumnText16(stmt, index);
+                return text==null ? null : XElement.Parse(text);
+            }
+
             throw new NotSupportedException("Don't know how to read " + clrType);
         }
 

@@ -1,7 +1,9 @@
 //
 // Copyright (c) 2012 Krueger Systems, Inc.
 // Copyright (c) 2013 Øystein Krog (oystein.krog@gmail.com)
-// 
+// Copyright (c) 2014 Benjamin Mayrargue (softlion@softlion.com)
+//   - Support for multi columns promary keys
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -169,19 +171,6 @@ namespace SQLite.Net
             get { return _tables != null ? _tables.Values : Enumerable.Empty<TableMapping>(); }
         }
 
-        /// <summary>
-        ///     Whether <see cref="BeginTransaction" /> has been called and the database is waiting for a <see cref="Commit" />.
-        /// </summary>
-        public bool IsInTransaction
-        {
-            get { return _transactionDepth > 0; }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
 
         public void EnableLoadExtension(int onoff)
         {
@@ -290,14 +279,29 @@ namespace SQLite.Net
                 map = GetMapping(ty, createFlags);
                 _tables.Add(ty.FullName, map);
             }
-            string query = "create table if not exists \"" + map.TableName + "\"(\n";
 
-            IEnumerable<string> decls = map.Columns.Select(p => Orm.SqlDecl(p, StoreDateTimeAsTicks));
-            string decl = string.Join(",\n", decls.ToArray());
-            query += decl;
-            query += ")";
+            var sbQuery = new StringBuilder("create table if not exists \"").Append(map.TableName).Append("\"( \n");
+            map.Columns.Aggregate(sbQuery, (sb, column) => sb.Append(Orm.SqlDecl(column, StoreDateTimeAsTicks)).Append(",\n"));
 
-            int count = Execute(query);
+            var pks = (from c in map.Columns where c.IsPK || c.IsAutoInc select c).ToList(); //autoincrement must be a primary key
+            var autoincs = pks.Count(p => p.IsAutoInc);
+            if (autoincs > 1)
+                throw new Exception("Can not have a multiple primary key with a single autoincrement");
+            if (pks.Count != 0 && autoincs == 0)
+            {
+                //If autoincs == 1, a 'primary key' constraint has already been created
+                //, PRIMARY KEY (A_ID, B_ID)
+                sbQuery.Append("primary key (");
+                pks.Aggregate(sbQuery, (sb, c) => sb.Append(c.Name).Append(','));
+                sbQuery.Remove(sbQuery.Length - 1, 1).Append(')');
+            }
+            else
+            {
+                sbQuery.Remove(sbQuery.Length - 2, 2);
+            }
+
+            sbQuery.Append(")");
+            var count = Execute(sbQuery.ToString());
 
             if (count == 0)
             {
@@ -307,11 +311,11 @@ namespace SQLite.Net
             }
 
             var indexes = new Dictionary<string, IndexInfo>();
-            foreach (TableMapping.Column c in map.Columns)
+            foreach (var c in map.Columns)
             {
-                foreach (IndexedAttribute i in c.Indices)
+                foreach (var i in c.Indices)
                 {
-                    string iname = i.Name ?? map.TableName + "_" + c.Name;
+                    var iname = i.Name ?? map.TableName + "_" + c.Name;
                     IndexInfo iinfo;
                     if (!indexes.TryGetValue(iname, out iinfo))
                     {
@@ -339,9 +343,9 @@ namespace SQLite.Net
                 }
             }
 
-            foreach (string indexName in indexes.Keys)
+            foreach (var indexName in indexes.Keys)
             {
-                IndexInfo index = indexes[indexName];
+                var index = indexes[indexName];
                 string columns = String.Join("\",\"",
                     index.Columns.OrderBy(i => i.Order).Select(i => i.ColumnName).ToArray());
                 count += CreateIndex(indexName, index.TableName, columns, index.Unique);
@@ -750,6 +754,14 @@ namespace SQLite.Net
         public T Find<T>(Expression<Func<T, bool>> predicate) where T : new()
         {
             return Table<T>().Where(predicate).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Whether <see cref="BeginTransaction"/> has been called and the database is waiting for a <see cref="Commit"/>.
+        /// </summary>
+        public bool IsInTransaction
+        {
+            get { return _transactionDepth > 0; }
         }
 
         /// <summary>
@@ -1274,8 +1286,7 @@ namespace SQLite.Net
                 select p;
             IEnumerable<object> vals = from c in cols
                 select c.GetValue(obj);
-            var ps = new List<object>(vals);
-            ps.Add(pk.GetValue(obj));
+            var ps = new List<object>(vals){pk.GetValue(obj)};
             string q = string.Format("update \"{0}\" set {1} where {2} = ? ", map.TableName,
                 string.Join(",", (from c in cols
                     select "\"" + c.Name + "\" = ? ").ToArray()), pk.Name);
@@ -1325,6 +1336,28 @@ namespace SQLite.Net
             return Execute(q, pk.GetValue(objectToDelete));
         }
 
+        public int Delete<T>(IEnumerable<T> objects)
+        {
+            if (objects == null)
+                return 0;
+
+            var map = GetMapping(typeof(T));
+            var pk = map.PK;
+            if (pk == null)
+            {
+                throw new NotSupportedException("Cannot delete " + map.TableName + ": it has no PK");
+            }
+            var keyObjects = objects.Select(o => pk.GetValue(o)).ToArray();
+            if (keyObjects.Length>0)
+            {
+                var keyListParams = String.Join(",", from c in objects select "?");
+                var q = string.Format("delete from \"{0}\" where \"{1}\" in ({2})", map.TableName, pk.Name, keyListParams);
+                return Execute(q, keyObjects);
+            }
+
+            return 0;
+        }
+
         /// <summary>
         ///     Deletes the object with the specified primary key.
         /// </summary>
@@ -1372,9 +1405,16 @@ namespace SQLite.Net
             Dispose(false);
         }
 
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
         protected virtual void Dispose(bool disposing)
         {
-            Close();
+            if (disposing)
+                Close();
         }
 
         public void Close()

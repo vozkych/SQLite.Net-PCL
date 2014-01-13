@@ -1,6 +1,8 @@
 //
 // Copyright (c) 2012 Krueger Systems, Inc.
 // Copyright (c) 2013 Øystein Krog (oystein.krog@gmail.com)
+// Copyright (c) 2014 Benjamin Mayrargue (softlion@softlion.com)
+//  - Included patch from https://github.com/praeclarum/sqlite-net/issues/158 (implements NOT operator)
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -359,7 +361,8 @@ namespace SQLite.Net
                     CommandText = sqlCall
                 };
             }
-            else if (expr.NodeType == ExpressionType.Constant)
+            
+            if (expr.NodeType == ExpressionType.Constant)
             {
                 var c = (ConstantExpression) expr;
                 queryArgs.Add(c.Value);
@@ -369,7 +372,8 @@ namespace SQLite.Net
                     Value = c.Value
                 };
             }
-            else if (expr.NodeType == ExpressionType.Convert)
+            
+            if (expr.NodeType == ExpressionType.Convert)
             {
                 var u = (UnaryExpression) expr;
                 Type ty = u.Type;
@@ -380,7 +384,27 @@ namespace SQLite.Net
                     Value = valr.Value != null ? ConvertTo(valr.Value, ty) : null
                 };
             }
-            else if (expr.NodeType == ExpressionType.MemberAccess)
+
+            //https://github.com/praeclarum/sqlite-net/issues/158
+            if (expr.NodeType == ExpressionType.Not)
+            {
+                var n = (UnaryExpression)expr;
+                var valn = CompileExpr(n.Operand, queryArgs);
+                switch (n.Operand.NodeType)
+                {
+                    case ExpressionType.MemberAccess:
+                        valn.CommandText += " = 0";
+                        break;
+                    case ExpressionType.Call:
+                        valn.CommandText = valn.CommandText.Replace(" like ", " not like ");
+                        valn.CommandText = valn.CommandText.Replace(" in ", " not in ");
+                        valn.CommandText = valn.CommandText.Replace(" = ", " <> ");
+                        break;
+                }
+                return new CompileResult { CommandText = valn.CommandText };
+            }
+
+            if (expr.NodeType == ExpressionType.MemberAccess)
             {
                 var mem = (MemberExpression) expr;
 
@@ -396,61 +420,58 @@ namespace SQLite.Net
                         CommandText = "\"" + columnName + "\""
                     };
                 }
-                else
+
+                object obj = null;
+                if (mem.Expression != null)
                 {
-                    object obj = null;
-                    if (mem.Expression != null)
+                    CompileResult r = CompileExpr(mem.Expression, queryArgs);
+                    if (r.Value == null)
                     {
-                        CompileResult r = CompileExpr(mem.Expression, queryArgs);
-                        if (r.Value == null)
-                        {
-                            throw new NotSupportedException("Member access failed to compile expression");
-                        }
-                        if (r.CommandText == "?")
-                        {
-                            queryArgs.RemoveAt(queryArgs.Count - 1);
-                        }
-                        obj = r.Value;
+                        throw new NotSupportedException("Member access failed to compile expression");
                     }
-
-                    //
-                    // Get the member value
-                    //
-                    object val = _sqlitePlatform.ReflectionService.GetMemberValue(obj, expr, mem.Member);
-
-                    //
-                    // Work special magic for enumerables
-                    //
-                    if (val != null && val is IEnumerable && !(val is string))
+                    if (r.CommandText == "?")
                     {
-                        var sb = new StringBuilder();
-                        sb.Append("(");
-                        string head = "";
-                        foreach (object a in (IEnumerable) val)
-                        {
-                            queryArgs.Add(a);
-                            sb.Append(head);
-                            sb.Append("?");
-                            head = ",";
-                        }
-                        sb.Append(")");
-                        return new CompileResult
-                        {
-                            CommandText = sb.ToString(),
-                            Value = val
-                        };
+                        queryArgs.RemoveAt(queryArgs.Count - 1);
                     }
-                    else
-                    {
-                        queryArgs.Add(val);
-                        return new CompileResult
-                        {
-                            CommandText = "?",
-                            Value = val
-                        };
-                    }
+                    obj = r.Value;
                 }
+
+                //
+                // Get the member value
+                //
+                object val = _sqlitePlatform.ReflectionService.GetMemberValue(obj, expr, mem.Member);
+
+                //
+                // Work special magic for enumerables
+                //
+                if (val is IEnumerable && !(val is string))
+                {
+                    var sb = new StringBuilder("(");
+                    string head = "";
+                    foreach (object a in (IEnumerable) val)
+                    {
+                        queryArgs.Add(a);
+                        sb.Append(head);
+                        sb.Append("?");
+                        head = ",";
+                    }
+                    sb.Append(")");
+
+                    return new CompileResult
+                    {
+                        CommandText = sb.ToString(),
+                        Value = val
+                    };
+                }
+
+                queryArgs.Add(val);
+                return new CompileResult
+                {
+                    CommandText = "?",
+                    Value = val
+                };
             }
+
             throw new NotSupportedException("Cannot compile: " + expr.NodeType.ToString());
         }
 
