@@ -4,3 +4,4 @@
 ..\.nuget\nuget pack SQLite.Net.Platform.Win32.nuspec -o output
 ..\.nuget\nuget pack SQLite.Net.Platform.XamarinAndroid.nuspec -o output
 ..\.nuget\nuget pack SQLite.Net.Platform.XamarinIOS.nuspec -o output
+pause
