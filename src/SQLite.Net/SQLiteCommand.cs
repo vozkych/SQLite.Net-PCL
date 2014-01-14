@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using SQLite.Net.Interop;
 
@@ -103,6 +104,29 @@ namespace SQLite.Net
         protected virtual void OnInstanceCreated(object obj)
         {
             // Can be overridden.
+        }
+
+        public IEnumerable<T> ExecuteSimpleQuery<T>()
+        {
+            if (_conn.Trace)
+            {
+                Debug.WriteLine("Executing simple query: " + this);
+            }
+
+            var stmt = Prepare();
+            try
+            {
+                while (_sqlitePlatform.SQLiteApi.Step(stmt) == Result.Row)
+                {
+                    var colType = _sqlitePlatform.SQLiteApi.ColumnType(stmt, 0);
+                    var val = ReadCol(stmt, 0, colType, typeof(T));
+                    yield return (T)val;
+                }
+            }
+            finally
+            {
+                _sqlitePlatform.SQLiteApi.Finalize(stmt);
+            }
         }
 
         public IEnumerable<T> ExecuteDeferredQuery<T>(TableMapping map)

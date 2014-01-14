@@ -68,19 +68,24 @@ namespace SQLite.Net
 
         public TableMapping Table { get; private set; }
 
-        public IEnumerator<T> GetEnumerator()
+        private IEnumerable<TResult> GetEnumerable<TResult>()
         {
             if (!_deferred)
             {
-                return GenerateCommand("*").ExecuteQuery<T>().GetEnumerator();
+                return GenerateCommand("*").ExecuteQuery<TResult>();
             }
 
-            return GenerateCommand("*").ExecuteDeferredQuery<T>().GetEnumerator();
+            return GenerateCommand("*").ExecuteDeferredQuery<TResult>();
+        }
+
+        public IEnumerator<T> GetEnumerator()
+        {
+            return GetEnumerable<T>().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return GetEnumerator();
+            return GetEnumerable<T>().GetEnumerator();
         }
 
         public TableQuery<T> Clone()
@@ -227,11 +232,20 @@ namespace SQLite.Net
             return q;
         }
 
-        public TableQuery<T> Select<TResult>(Expression<Func<T, TResult>> selector)
+        /// <summary>
+        /// Select is always last, we are able (and should) return an enumeration here instead of a clone.
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="selector"></param>
+        /// <returns></returns>
+        public IEnumerable<TResult> Select<TResult>(Expression<Func<T, TResult>> selector)
         {
-            TableQuery<T> q = Clone();
-            q._selector = selector;
-            return q;
+            //var q = Clone();
+            //q._selector = selector;
+            //return q;
+
+            _selector = selector;
+            return GetEnumerable<TResult>();
         }
 
         private SQLiteCommand GenerateCommand(string selectionList)
