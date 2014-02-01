@@ -346,12 +346,25 @@ namespace SQLite.Net
             foreach (var indexName in indexes.Keys)
             {
                 var index = indexes[indexName];
-                string columns = String.Join("\",\"",
-                    index.Columns.OrderBy(i => i.Order).Select(i => i.ColumnName).ToArray());
+                var columns = index.Columns.OrderBy(i => i.Order).Select(i => i.ColumnName);
                 count += CreateIndex(indexName, index.TableName, columns, index.Unique);
             }
 
             return count;
+        }
+
+        /// <summary>
+        /// Creates an index for the specified table and columns.
+        /// </summary>
+        /// <param name="indexName">Name of the index to create</param>
+        /// <param name="tableName">Name of the database table</param>
+        /// <param name="columnNames">An array of column names to index</param>
+        /// <param name="unique">Whether the index should be unique</param>
+        public int CreateIndex(string indexName, string tableName, IEnumerable<string> columnNames, bool unique = false)
+        {
+            const string sqlFormat = "create {2} index if not exists \"{3}\" on \"{0}\"(\"{1}\")";
+            var sql = String.Format(sqlFormat, tableName, String.Join("\", \"", columnNames), unique ? "unique" : null, indexName);
+            return Execute(sql);
         }
 
         /// <summary>
@@ -361,6 +374,7 @@ namespace SQLite.Net
         /// <param name="tableName">Name of the database table</param>
         /// <param name="columnName">Name of the column to index</param>
         /// <param name="unique">Whether the index should be unique</param>
+        [Obsolete("use CreateIndex with the string[] columnNames parameter instead")]
         public int CreateIndex(string indexName, string tableName, string columnName, bool unique = false)
         {
             const string sqlFormat = "create {2} index if not exists \"{3}\" on \"{0}\"(\"{1}\")";
@@ -376,8 +390,7 @@ namespace SQLite.Net
         /// <param name="unique">Whether the index should be unique</param>
         public int CreateIndex(string tableName, string columnName, bool unique = false)
         {
-            return CreateIndex(string.Concat(tableName, "_", columnName.Replace("\",\"", "_")), tableName, columnName,
-                unique);
+            return CreateIndex(string.Concat(tableName, "_", columnName.Replace("\",\"", "_")), tableName, new[] { columnName }, unique);
         }
 
         /// <summary>
@@ -1181,6 +1194,42 @@ namespace SQLite.Net
             return Insert(obj, "OR REPLACE", obj.GetType());
         }
 
+        public int InsertOrIgnore(object obj)
+        {
+            return obj == null ? 0 : Insert(obj, "OR IGNORE", obj.GetType());
+        }
+
+        public int InsertOrReplaceAll(IEnumerable objects)
+        {
+            var c = 0;
+            RunInTransaction(() =>
+            {
+                foreach (var r in objects)
+                {
+                    c += InsertOrReplace(r);
+                }
+            });
+            return c;
+        }
+
+        public int InsertOrIgnoreAll(IEnumerable objects)
+        {
+            var c = 0;
+            RunInTransaction(() =>
+            {
+                foreach (var r in objects)
+                {
+                    c += InsertOrIgnore(r);
+                }
+            });
+            return c;
+        }
+
+        public int InsertOrIgnore(object obj, Type objType)
+        {
+            return Insert(obj, "OR IGNORE", objType);
+        }
+
         /// <summary>
         ///     Inserts the given object and retrieves its
         ///     auto incremented primary key if it has one.
@@ -1548,7 +1597,7 @@ namespace SQLite.Net
 //			[Column ("type")]
 //			public string ColumnType { get; set; }
 
-//			public int notnull { get; set; }
+			public int NotNull { get; set; }
 
 //			public string dflt_value { get; set; }
 

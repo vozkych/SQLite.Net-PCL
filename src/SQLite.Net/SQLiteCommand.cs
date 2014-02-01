@@ -139,29 +139,56 @@ namespace SQLite.Net
             IDbStatement stmt = Prepare();
             try
             {
+                var type = typeof (T);
+                var isPrimitiveType = type.IsPrimitive || type == typeof (string);
+
                 var cols = new TableMapping.Column[_sqlitePlatform.SQLiteApi.ColumnCount(stmt)];
 
                 for (int i = 0; i < cols.Length; i++)
                 {
-                    string name = _sqlitePlatform.SQLiteApi.ColumnName16(stmt, i);
-                    cols[i] = map.FindColumn(name);
+                    if (!isPrimitiveType)
+                    {
+                        string name = _sqlitePlatform.SQLiteApi.ColumnName16(stmt, i);
+                        cols[i] = map.FindColumn(name);
+                    }
+                    else
+                    {
+                        cols[i] = new TableMapping.Column() { ColumnType = type };
+                    }
                 }
 
                 while (_sqlitePlatform.SQLiteApi.Step(stmt) == Result.Row)
                 {
-                    object obj = Activator.CreateInstance(map.MappedType);
-                    for (int i = 0; i < cols.Length; i++)
+                    var obj = isPrimitiveType ? null : Activator.CreateInstance(map.MappedType);
+                    for (var i = 0; i < cols.Length; i++)
                     {
+                        ColType colType;
+                        object val;
+
+                        //Support of primitive types
+                        if (isPrimitiveType)
+                        {
+                            //Assert(cols.Length == 1)
+                            colType = _sqlitePlatform.SQLiteApi.ColumnType(stmt, i);
+                            val = ReadCol(stmt, i, colType, cols[i].ColumnType);
+                            yield return (T) Convert.ChangeType(val, type, CultureInfo.CurrentCulture);
+                            break;
+                        }
+
                         if (cols[i] == null)
                         {
                             continue;
                         }
-                        ColType colType = _sqlitePlatform.SQLiteApi.ColumnType(stmt, i);
-                        object val = ReadCol(stmt, i, colType, cols[i].ColumnType);
+                        colType = _sqlitePlatform.SQLiteApi.ColumnType(stmt, i);
+                        val = ReadCol(stmt, i, colType, cols[i].ColumnType);
                         cols[i].SetValue(obj, val);
                     }
-                    OnInstanceCreated(obj);
-                    yield return (T) obj;
+
+                    if (!isPrimitiveType)
+                    {
+                        OnInstanceCreated(obj);
+                        yield return (T) obj;
+                    }
                 }
             }
             finally

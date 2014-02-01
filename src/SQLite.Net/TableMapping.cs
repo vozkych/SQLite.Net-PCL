@@ -220,6 +220,10 @@ namespace SQLite.Net
         {
             private readonly PropertyInfo _prop;
 
+            internal Column()
+            {
+            }
+
             public Column(PropertyInfo prop, CreateFlags createFlags = CreateFlags.None)
             {
                 var colAttr =
@@ -260,7 +264,7 @@ namespace SQLite.Net
                 get { return _prop.Name; }
             }
 
-            public Type ColumnType { get; private set; }
+            public Type ColumnType { get; internal set; }
 
             public string Collation { get; private set; }
 
@@ -273,7 +277,7 @@ namespace SQLite.Net
 
             public bool IsNullable { get; private set; }
 
-            public int MaxStringLength { get; private set; }
+            public int? MaxStringLength { get; private set; }
 
             /// <summary>
             ///     Set column value.
