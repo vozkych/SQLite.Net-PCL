@@ -46,12 +46,14 @@ namespace SQLite.Net.Tests
         [Test]
         public void DeleteIn()
         {
-            SQLiteConnection db = CreateDb();
+            using (var db = CreateDb())
+            {
+                var ids = db.Table<TestTable>().Take(5).Select(t => t.Id).ToArray();
+                var r = db.DeleteIn<TestTable>(ids);
 
-            int r = db.DeleteIn<TestTable>(1,1,1,1);
-
-            Assert.AreEqual(1, r);
-            Assert.AreEqual(Count-1, db.Table<TestTable>().Count());
+                Assert.AreEqual(5, r);
+                Assert.AreEqual(Count - 5, db.Table<TestTable>().Count());
+            }
         }
 
         [Test]
@@ -70,7 +72,7 @@ namespace SQLite.Net.Tests
         {
             SQLiteConnection db = CreateDb();
 
-            int r = db.Delete<TestTable>(348597);
+            int r = db.Delete<TestTable>(new []{348597});
 
             Assert.AreEqual(0, r);
             Assert.AreEqual(Count, db.Table<TestTable>().Count());
@@ -81,7 +83,7 @@ namespace SQLite.Net.Tests
         {
             SQLiteConnection db = CreateDb();
 
-            int r = db.Delete<TestTable>(1);
+            int r = db.Delete<TestTable>(new []{1});
 
             Assert.AreEqual(1, r);
             Assert.AreEqual(Count - 1, db.Table<TestTable>().Count());

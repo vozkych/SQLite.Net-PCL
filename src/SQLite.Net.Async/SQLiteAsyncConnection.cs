@@ -205,7 +205,7 @@ namespace SQLite.Net.Async
                 SQLiteConnectionWithLock conn = GetConnection();
                 using (conn.Lock())
                 {
-                    return conn.Delete<T>(pk);
+                    return conn.Delete<T>(new []{pk});
                 }
             });
         }

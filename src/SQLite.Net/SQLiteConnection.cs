@@ -486,6 +486,11 @@ namespace SQLite.Net
         /// </returns>
         public SQLiteCommand CreateCommand(string cmdText, params object[] args)
         {
+            return CreateCommand(cmdText, (IEnumerable<object>)args);
+        }
+
+        public SQLiteCommand CreateCommand(string cmdText, IEnumerable<object> args)
+        {
             if (!_open)
             {
                 throw SQLiteException.New(Result.Error, "Cannot create commands from unopened database");
@@ -500,24 +505,7 @@ namespace SQLite.Net
             return cmd;
         }
 
-        /// <summary>
-        ///     Creates a SQLiteCommand given the command text (SQL) with arguments. Place a '?'
-        ///     in the command text for each of the arguments and then executes that command.
-        ///     Use this method instead of Query when you don't expect rows back. Such cases include
-        ///     INSERTs, UPDATEs, and DELETEs.
-        ///     You can set the Trace or TimeExecution properties of the connection
-        ///     to profile execution.
-        /// </summary>
-        /// <param name="query">
-        ///     The fully escaped SQL.
-        /// </param>
-        /// <param name="args">
-        ///     Arguments to substitute for the occurences of '?' in the query.
-        /// </param>
-        /// <returns>
-        ///     The number of rows modified in the database as a result of this execution.
-        /// </returns>
-        public int Execute(string query, params object[] args)
+        public int Execute(string query, IEnumerable<object> args)
         {
             SQLiteCommand cmd = CreateCommand(query, args);
 
@@ -542,6 +530,28 @@ namespace SQLite.Net
             }
 
             return r;
+        }
+
+        /// <summary>
+        ///     Creates a SQLiteCommand given the command text (SQL) with arguments. Place a '?'
+        ///     in the command text for each of the arguments and then executes that command.
+        ///     Use this method instead of Query when you don't expect rows back. Such cases include
+        ///     INSERTs, UPDATEs, and DELETEs.
+        ///     You can set the Trace or TimeExecution properties of the connection
+        ///     to profile execution.
+        /// </summary>
+        /// <param name="query">
+        ///     The fully escaped SQL.
+        /// </param>
+        /// <param name="args">
+        ///     Arguments to substitute for the occurences of '?' in the query.
+        /// </param>
+        /// <returns>
+        ///     The number of rows modified in the database as a result of this execution.
+        /// </returns>
+        public int Execute(string query, params object[] args)
+        {
+            return Execute(query, (IEnumerable<object>)args);
         }
 
         public T ExecuteScalar<T>(string query, params object[] args)
@@ -1457,7 +1467,7 @@ namespace SQLite.Net
         /// <summary>
         ///     Deletes the given objects from the database using their primary keys.
         /// </summary>
-        /// <param name="objectToDelete">
+        /// <param name="objects">
         ///     The object to delete. It must have a primary key designated using the PrimaryKeyAttribute.
         /// </param>
         /// <returns>
@@ -1485,8 +1495,8 @@ namespace SQLite.Net
                 //Optimization: delete all objects in one request.
                 //Won't work if there are too much objects, but who cares ...
                 var pk = map.PK;
-                var keyObjects = obj.Select(o => pk.GetValue(o)).ToArray();
-                if (keyObjects.Length > 0)
+                var keyObjects = obj.Select(o => pk.GetValue(o)).ToList();
+                if (keyObjects.Count > 0)
                 {
                     var keyListParams = String.Join(",", Enumerable.Repeat('?', obj.Count));
                     var q = string.Format("delete from \"{0}\" where \"{1}\" in ({2})", map.TableName, pk.Name, keyListParams);
@@ -1510,18 +1520,21 @@ namespace SQLite.Net
         /// <typeparam name='T'>
         ///     The type of object.
         /// </typeparam>
-        public int Delete<T>(params object[] primaryKey)
+        public int Delete<T>(IEnumerable primaryKey)
         {
-            if (primaryKey == null || primaryKey.Length == 0)
-                throw new ArgumentNullException("primaryKeys"); ;
+            if (primaryKey == null)
+                throw new ArgumentNullException("primaryKey");
+            var pks = primaryKey.Cast<object>().ToList();
+            if (pks.Count == 0)
+                throw new ArgumentNullException("primaryKey"); ;
             var map = GetMapping(typeof(T));
             if (map.PK == null)
                 throw new NotSupportedException("Cannot delete " + map.TableName + ": it has no PK");
-            if (primaryKey.Length > map.PKs.Count)
+            if (pks.Count > map.PKs.Count)
                 throw new ArgumentException("primaryKeys array length can not be greater than the number of primary keys");
 
-            var q = string.Format("delete from \"{0}\" where {1}", map.TableName, map.PkWhereSqlForPartialKeys(primaryKey.Length));
-            return Execute(q, primaryKey);
+            var q = string.Format("delete from \"{0}\" where {1}", map.TableName, map.PkWhereSqlForPartialKeys(pks.Count));
+            return Execute(q, pks);
         }
 
         /// <summary>
@@ -1530,9 +1543,12 @@ namespace SQLite.Net
         /// <typeparam name="T"></typeparam>
         /// <param name="keys">primary keys of items to delete</param>
         /// <returns>The number of objects deleted</returns>
-        public int DeleteIn<T>(params object[] keys)
+        public int DeleteIn<T>(IEnumerable keys)
         {
-            if (keys == null || keys.Length == 0)
+            if (keys == null)
+                throw new ArgumentNullException("keys");
+            var theKeys = keys.Cast<object>().ToList();
+            if (theKeys.Count == 0)
                 throw new ArgumentNullException("keys");
             var map = GetMapping(typeof(T));
             if (map.PK == null)
@@ -1540,9 +1556,9 @@ namespace SQLite.Net
             if (map.PKs.Count != 1)
                 throw new ArgumentException("only single primary keys are supported by this method");
 
-            var inn = keys.Aggregate(new StringBuilder(), (sb, k) => sb.Append("?,"), sb => sb.Remove(sb.Length - 1, 1).ToString());
-            var q = string.Format("delete from \"{0}\" where \"{1}\" in ({2})", map.TableName, map.PKs[0].Name, inn);
-            return Execute(q, keys);
+            var keyListParams = String.Join(",", Enumerable.Repeat('?', theKeys.Count));
+            var q = string.Format("delete from \"{0}\" where \"{1}\" in ({2})", map.TableName, map.PKs[0].Name, keyListParams);
+            return Execute(q, theKeys);
         }
 
         /// <summary>
