@@ -1500,7 +1500,7 @@ namespace SQLite.Net
         /// <summary>
         ///     Deletes the object with the specified primary key.
         /// </summary>
-        /// <param name="primaryKeys">
+        /// <param name="primaryKey">
         ///     The primary key of the object to delete.
         ///     In case of a multiple primary key, you can set all primary key values in table order
         /// </param>
@@ -1510,18 +1510,39 @@ namespace SQLite.Net
         /// <typeparam name='T'>
         ///     The type of object.
         /// </typeparam>
-        public int Delete<T>(params object[] primaryKeys)
+        public int Delete<T>(params object[] primaryKey)
         {
-            if (primaryKeys == null || primaryKeys.Length == 0)
+            if (primaryKey == null || primaryKey.Length == 0)
                 throw new ArgumentNullException("primaryKeys"); ;
             var map = GetMapping(typeof(T));
             if (map.PK == null)
                 throw new NotSupportedException("Cannot delete " + map.TableName + ": it has no PK");
-            if (primaryKeys.Length > map.PKs.Count)
+            if (primaryKey.Length > map.PKs.Count)
                 throw new ArgumentException("primaryKeys array length can not be greater than the number of primary keys");
 
-            var q = string.Format("delete from \"{0}\" where {1}", map.TableName, map.PkWhereSqlForPartialKeys(primaryKeys.Length));
-            return Execute(q, primaryKeys);
+            var q = string.Format("delete from \"{0}\" where {1}", map.TableName, map.PkWhereSqlForPartialKeys(primaryKey.Length));
+            return Execute(q, primaryKey);
+        }
+
+        /// <summary>
+        /// Delete objects by primary key
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="keys">primary keys of items to delete</param>
+        /// <returns>The number of objects deleted</returns>
+        public int DeleteIn<T>(params object[] keys)
+        {
+            if (keys == null || keys.Length == 0)
+                throw new ArgumentNullException("keys");
+            var map = GetMapping(typeof(T));
+            if (map.PK == null)
+                throw new NotSupportedException("Cannot delete " + map.TableName + ": it has no PK");
+            if (map.PKs.Count != 1)
+                throw new ArgumentException("only single primary keys are supported by this method");
+
+            var inn = keys.Aggregate(new StringBuilder(), (sb, k) => sb.Append("?,"), sb => sb.Remove(sb.Length - 1, 1).ToString());
+            var q = string.Format("delete from \"{0}\" where \"{1}\" in ({2})", map.TableName, map.PKs[0].Name, inn);
+            return Execute(q, keys);
         }
 
         /// <summary>

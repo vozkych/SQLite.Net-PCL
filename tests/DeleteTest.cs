@@ -44,6 +44,17 @@ namespace SQLite.Net.Tests
         }
 
         [Test]
+        public void DeleteIn()
+        {
+            SQLiteConnection db = CreateDb();
+
+            int r = db.DeleteIn<TestTable>(1,1,1,1);
+
+            Assert.AreEqual(1, r);
+            Assert.AreEqual(Count-1, db.Table<TestTable>().Count());
+        }
+
+        [Test]
         public void DeleteEntityOne()
         {
             SQLiteConnection db = CreateDb();
