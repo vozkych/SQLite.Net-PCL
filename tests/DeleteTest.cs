@@ -53,6 +53,10 @@ namespace SQLite.Net.Tests
 
                 Assert.AreEqual(5, r);
                 Assert.AreEqual(Count - 5, db.Table<TestTable>().Count());
+
+                //Test with an empty array
+                ids = new int[0];
+                db.DeleteIn<TestTable>(ids);
             }
         }
 

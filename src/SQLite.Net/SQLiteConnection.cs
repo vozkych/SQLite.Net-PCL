@@ -1523,10 +1523,10 @@ namespace SQLite.Net
         public int Delete<T>(IEnumerable primaryKey)
         {
             if (primaryKey == null)
-                throw new ArgumentNullException("primaryKey");
+                return 0;
             var pks = primaryKey.Cast<object>().ToList();
             if (pks.Count == 0)
-                throw new ArgumentNullException("primaryKey"); ;
+                return 0;
             var map = GetMapping(typeof(T));
             if (map.PK == null)
                 throw new NotSupportedException("Cannot delete " + map.TableName + ": it has no PK");
@@ -1546,10 +1546,10 @@ namespace SQLite.Net
         public int DeleteIn<T>(IEnumerable keys)
         {
             if (keys == null)
-                throw new ArgumentNullException("keys");
+                return 0;
             var theKeys = keys.Cast<object>().ToList();
             if (theKeys.Count == 0)
-                throw new ArgumentNullException("keys");
+                return 0;
             var map = GetMapping(typeof(T));
             if (map.PK == null)
                 throw new NotSupportedException("Cannot delete " + map.TableName + ": it has no PK");
