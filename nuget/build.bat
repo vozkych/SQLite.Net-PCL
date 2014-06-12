@@ -1,4 +1,4 @@
-set version=2.6.5
+set version=2.6.6
 
 @mkdir output
 ..\.nuget\nuget pack SQLite.Net.nuspec -o output -Version %version%
