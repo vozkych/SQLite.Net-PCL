@@ -16,6 +16,18 @@ namespace SQLite.Net.Tests
             public int Datum { get; set; }
         }
 
+        private class TestTableMulti
+        {
+            [PrimaryKey]
+            public string Id { get; set; }
+
+            [PrimaryKey, Indexed]
+            public string Id2 { get; set; }
+
+            public int Datum { get; set; }
+        }
+
+
         private const int Count = 100;
 
         private SQLiteConnection CreateDb()
@@ -29,6 +41,18 @@ namespace SQLite.Net.Tests
                 };
             db.InsertAll(items);
             Assert.AreEqual(Count, db.Table<TestTable>().Count());
+
+            db.CreateTable<TestTableMulti>();
+            var items2 = from i in Enumerable.Range(0, Count)
+                select new TestTableMulti
+                {
+                    Id = "t" + i,
+                    Id2 = "t" + i,
+                    Datum = 1000 + i
+                };
+            db.InsertAll(items2);
+            Assert.AreEqual(Count, db.Table<TestTableMulti>().Count());
+            
             return db;
         }
 
@@ -91,6 +115,24 @@ namespace SQLite.Net.Tests
 
             Assert.AreEqual(1, r);
             Assert.AreEqual(Count - 1, db.Table<TestTable>().Count());
+        }
+
+        [Test]
+        public void DeleteMultiPK()
+        {
+            var db = CreateDb();
+
+            //Full key
+            var s1 = "t12";
+            var s2 = "t12";
+            var r = db.Delete<TestTableMulti>(new []{s1,s2});
+            Assert.AreEqual(1, r);
+            Assert.AreEqual(Count-1, db.Table<TestTableMulti>().Count());
+
+            //Partial key
+            var r2 = db.Delete<TestTableMulti>(new []{"t13"});
+            Assert.AreEqual(1, r2);
+            Assert.AreEqual(Count-2, db.Table<TestTableMulti>().Count());
         }
     }
 }
