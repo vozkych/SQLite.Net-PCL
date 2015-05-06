@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using SQLite.Net.Interop;
 
 namespace SQLite.Net.Platform.XamarinIOS
