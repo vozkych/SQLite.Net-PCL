@@ -1329,7 +1329,7 @@ namespace SQLite.Net
 
             foreach (var pk in map.PKs.Where(pk => pk.IsAutoGuid))
             {
-                PropertyInfo prop = objType.GetProperty(pk.PropertyName);
+                PropertyInfo prop = objType.GetTypeInfo().GetDeclaredProperty(pk.PropertyName);
                 if (prop != null)
                 {
                     if (prop.GetValue(obj, null).Equals(Guid.Empty))

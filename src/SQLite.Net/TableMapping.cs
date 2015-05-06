@@ -45,7 +45,7 @@ namespace SQLite.Net
             _sqlitePlatform = platformImplementation;
             MappedType = type;
 
-            var tableAttr = (TableAttribute) type.GetCustomAttributes(typeof (TableAttribute), true).FirstOrDefault();
+            var tableAttr = (TableAttribute) type.GetTypeInfo().GetCustomAttributes(typeof (TableAttribute), true).FirstOrDefault();
 
             TableName = tableAttr != null ? tableAttr.Name : MappedType.Name;
 
@@ -54,7 +54,7 @@ namespace SQLite.Net
             var cols = new List<Column>();
             foreach (PropertyInfo p in props)
             {
-                bool ignore = p.GetCustomAttributes(typeof (IgnoreAttribute), true).Length > 0;
+                bool ignore = p.GetCustomAttributes(typeof (IgnoreAttribute), true).Any();
 
                 if (p.CanWrite && !ignore)
                 {
@@ -290,13 +290,13 @@ namespace SQLite.Net
             public void SetValue(object obj, object val)
             {
                 Type propType = _prop.PropertyType;
-                if (propType.IsGenericType && propType.GetGenericTypeDefinition() == typeof (Nullable<>))
+                if (propType.IsConstructedGenericType && propType.GetGenericTypeDefinition() == typeof (Nullable<>))
                 {
-                    Type[] typeCol = propType.GetGenericArguments();
+                    Type[] typeCol = propType.GenericTypeArguments;
                     if (typeCol.Length > 0)
                     {
                         Type nullableType = typeCol[0];
-                        if (nullableType.BaseType == typeof (Enum))
+                        if (nullableType.GetTypeInfo().BaseType == typeof (Enum))
                         {
                             object result = val == null ? null : Enum.Parse(nullableType, val.ToString(), false);
                             _prop.SetValue(obj, result, null);

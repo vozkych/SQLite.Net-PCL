@@ -90,7 +90,7 @@ namespace SQLite.Net
             {
                 return storeDateTimeAsTicks ? "bigint" : "datetime";
             }
-            if (clrType.IsEnum)
+            if (clrType.GetTypeInfo().IsEnum)
             {
                 return "integer";
             }
@@ -108,40 +108,29 @@ namespace SQLite.Net
 
         public static bool IsPK(MemberInfo p)
         {
-            object[] attrs = p.GetCustomAttributes(typeof (PrimaryKeyAttribute), true);
-            return attrs.Length > 0;
+            return p.GetCustomAttributes(typeof (PrimaryKeyAttribute), true).Any();
         }
 
         public static string Collation(MemberInfo p)
         {
-            object[] attrs = p.GetCustomAttributes(typeof (CollationAttribute), true);
-            if (attrs.Length > 0)
-            {
-                return ((CollationAttribute) attrs[0]).Value;
-            }
-            return string.Empty;
+            var attr = p.GetCustomAttributes(typeof (CollationAttribute), true).FirstOrDefault() as CollationAttribute;
+            return attr != null ? attr.Value : string.Empty;
         }
 
         public static bool IsAutoInc(MemberInfo p)
         {
-            object[] attrs = p.GetCustomAttributes(typeof (AutoIncrementAttribute), true);
-            return attrs.Length > 0;
+            return p.GetCustomAttributes(typeof (AutoIncrementAttribute), true).Any();
         }
 
         public static IEnumerable<IndexedAttribute> GetIndices(MemberInfo p)
         {
-            object[] attrs = p.GetCustomAttributes(typeof (IndexedAttribute), true);
-            return attrs.Cast<IndexedAttribute>();
+            return p.GetCustomAttributes(typeof (IndexedAttribute), true).Cast<IndexedAttribute>();
         }
 
         public static int? MaxStringLength(PropertyInfo p)
         {
-            object[] attrs = p.GetCustomAttributes(typeof (MaxLengthAttribute), true);
-            if (attrs.Length > 0)
-            {
-                return ((MaxLengthAttribute) attrs[0]).Value;
-            }
-            return null; //DefaultMaxStringLength;
+            var attr = p.GetCustomAttributes(typeof (MaxLengthAttribute), true).FirstOrDefault() as MaxLengthAttribute;
+            return attr!=null ? attr.Value : (int?)null;
         }
     }
 }

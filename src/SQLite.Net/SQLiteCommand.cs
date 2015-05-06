@@ -28,6 +28,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Xml.Linq;
 using SQLite.Net.Interop;
@@ -140,7 +141,7 @@ namespace SQLite.Net
             try
             {
                 var type = typeof (T);
-                var isPrimitiveType = type.IsPrimitive || type == typeof (string);
+                var isPrimitiveType = type.GetTypeInfo().IsPrimitive || type == typeof (string);
 
                 var cols = new TableMapping.Column[_sqlitePlatform.SQLiteApi.ColumnCount(stmt)];
 
@@ -346,7 +347,7 @@ namespace SQLite.Net
                             NegativePointer);
                     }
                 }
-                else if (value.GetType().IsEnum)
+                else if (value.GetType().GetTypeInfo().IsEnum)
                 {
                     isqLite3Api.BindInt(stmt, index, Convert.ToInt32(value));
                 }
@@ -430,7 +431,7 @@ namespace SQLite.Net
                 string text = _sqlitePlatform.SQLiteApi.ColumnText16(stmt, index);
                 return DateTime.Parse(text);
             }
-            if (clrType.IsEnum)
+            if (clrType.GetTypeInfo().IsEnum)
             {
                 return _sqlitePlatform.SQLiteApi.ColumnInt(stmt, index);
             }
