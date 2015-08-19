@@ -1,4 +1,4 @@
-set version=3.6.9
+set version=3.7.0
 
 @mkdir output
 del output\*.*

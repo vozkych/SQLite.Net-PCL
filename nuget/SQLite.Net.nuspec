@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>SQLite.Net-PCL</id>
-      <version>2.2.2</version>
+      <version>3.5.0</version>
       <title>SQLite.Net PCL</title>
       <authors>Benjamin Mayrargue,Øystein Krog,Frank Krueger,Tim Heuer</authors>
       <owners>Benjamin Mayrargue</owners>
