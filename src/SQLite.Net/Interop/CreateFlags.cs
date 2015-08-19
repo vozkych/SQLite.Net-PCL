@@ -21,9 +21,11 @@
 //
 
 using System;
+using JetBrains.Annotations;
 
 namespace SQLite.Net.Interop
 {
+    [PublicAPI]
     [Flags]
     public enum CreateFlags
     {
@@ -32,6 +34,8 @@ namespace SQLite.Net.Interop
         ImplicitIndex = 2, // create an index for fields ending in 'Id' (Orm.ImplicitIndexSuffix)
         AllImplicit = 3, // do both above
 
-        AutoIncPK = 4 // force PK field to be auto inc
+        AutoIncPK = 4, // force PK field to be auto inc
+        FullTextSearch3 = 0x008,
+        FullTextSearch4 = 0x010,
     }
 }

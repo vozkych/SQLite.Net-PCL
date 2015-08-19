@@ -21,10 +21,12 @@
 //
 
 using System;
+using JetBrains.Annotations;
 
 namespace SQLite.Net.Attributes
 {
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = true)]
+    [PublicAPI]
+    [AttributeUsage(AttributeTargets.Property)]
     public class IndexedAttribute : Attribute
     {
         public IndexedAttribute()

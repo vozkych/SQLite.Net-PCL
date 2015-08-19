@@ -19,64 +19,19 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq.Expressions;
+using JetBrains.Annotations;
 
 namespace SQLite.Net
 {
+    [PublicAPI]
     public abstract class BaseTableQuery
     {
         protected class Ordering
         {
+            [CanBeNull]
             public string ColumnName { get; set; }
+
             public bool Ascending { get; set; }
-        }
-
-        protected class CompileResult
-        {
-            public string CommandText { get; set; }
-
-            public object Value { get; set; }
-        }
-
-        private static readonly Dictionary<ExpressionType, string> SqlNames = new Dictionary<ExpressionType, string>
-        {
-            {ExpressionType.GreaterThan, ">"},
-            {ExpressionType.GreaterThanOrEqual, ">="},
-            {ExpressionType.LessThan, "<"},
-            {ExpressionType.LessThanOrEqual, "<="},
-            {ExpressionType.And, "&"},
-            {ExpressionType.AndAlso, "and"},
-            {ExpressionType.Or, "|"},
-            {ExpressionType.OrElse, "or"},
-            {ExpressionType.Equal, "="},
-            {ExpressionType.NotEqual, "!="},
-        };
-
-        protected  static object ConvertTo(object obj, Type t)
-        {
-            var nut = Nullable.GetUnderlyingType(t);
-
-            if (nut != null)
-            {
-                return obj == null ? null : Convert.ChangeType(obj, nut, CultureInfo.CurrentCulture);
-            }
-
-            return Convert.ChangeType(obj, t, CultureInfo.CurrentCulture);
-        }
-
-
-        protected static string GetSqlName(Expression expr)
-        {
-            var n = expr.NodeType;
-
-            string sqlName;
-            if (SqlNames.TryGetValue(expr.NodeType, out sqlName))
-                return sqlName;
-
-            throw new NotSupportedException("Cannot get SQL operator name for node type: " + n);
         }
     }
 }

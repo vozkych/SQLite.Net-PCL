@@ -14,6 +14,8 @@ namespace SQLite.Net.Tests
             public int Id { get; set; }
 
             public int Datum { get; set; }
+
+            public string Test { get; set; }
         }
 
         private class TestTableMulti
@@ -37,7 +39,7 @@ namespace SQLite.Net.Tests
             IEnumerable<TestTable> items = from i in Enumerable.Range(0, Count)
                 select new TestTable
                 {
-                    Datum = 1000 + i
+                    Datum = 1000 + i, Test = "Hello World"
                 };
             db.InsertAll(items);
             Assert.AreEqual(Count, db.Table<TestTable>().Count());

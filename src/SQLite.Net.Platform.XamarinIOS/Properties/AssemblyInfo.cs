@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("SQLite.Net.Platform.XamarinIOS")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Ã˜ystein Krog")]
+[assembly: AssemblyCompany("Øystein Krog")]
 [assembly: AssemblyProduct("SQLite.Net.Platform.XamarinIOS")]
-[assembly: AssemblyCopyright("Copyright Â©Ã˜ystein Krog 2013")]
+[assembly: AssemblyCopyright("Copyright ©Øystein Krog 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

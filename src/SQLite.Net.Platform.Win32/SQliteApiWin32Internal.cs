@@ -1,6 +1,8 @@
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using SQLite.Net.Interop;
+using System.Reflection;
 
 namespace SQLite.Net.Platform.Win32
 {
@@ -9,22 +11,18 @@ namespace SQLite.Net.Platform.Win32
         static SQLiteApiWin32Internal()
         {
             // load native library
-            int ptrSize = Marshal.SizeOf(typeof (IntPtr));
-            if (ptrSize == 8)
+            int ptrSize = IntPtr.Size;
+            string relativePath = ptrSize == 8 ? @"x64\SQLite.Interop.dll" : @"x86\SQLite.Interop.dll";
+            string assemblyCurrentPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            string assemblyInteropPath = Path.Combine(assemblyCurrentPath, relativePath);
+
+            // try relative to assembly first, if that does not exist try relative to working dir
+            string interopPath = File.Exists(assemblyInteropPath) ? assemblyInteropPath : relativePath;
+
+            IntPtr ret = LoadLibrary(interopPath);
+            if (ret == IntPtr.Zero)
             {
-                IntPtr ret = LoadLibrary(@"x64\SQLite.Interop.dll");
-                if (ret == IntPtr.Zero)
-                {
-                    throw new Exception("Failed to load native sqlite library");
-                }
-            }
-            else if (ptrSize == 4)
-            {
-                IntPtr ret = LoadLibrary(@"x86\SQLite.Interop.dll");
-                if (ret == IntPtr.Zero)
-                {
-                    throw new Exception("Failed to load native sqlite library");
-                }
+                throw new Exception("Failed to load native sqlite library");
             }
         }
 
@@ -48,6 +46,12 @@ namespace SQLite.Net.Platform.Win32
 
         [DllImport("SQLite.Interop.dll", EntryPoint = "sqlite3_close", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result sqlite3_close(IntPtr db);
+
+        [DllImport("SQLite.Interop.dll", EntryPoint = "sqlite3_initialize", CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result sqlite3_initialize();
+
+        [DllImport("SQLite.Interop.dll", EntryPoint = "sqlite3_shutdown", CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result sqlite3_shutdown();
 
         [DllImport("SQLite.Interop.dll", EntryPoint = "sqlite3_config", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result sqlite3_config(ConfigOption option);
@@ -180,5 +184,39 @@ namespace SQLite.Net.Platform.Win32
         [DllImport("SQLite.Interop.dll", EntryPoint = "sqlite3_column_name16",
             CallingConvention = CallingConvention.Cdecl)]
         private static extern IntPtr sqlite3_column_name16(IntPtr stmt, int index);
+
+        [DllImport("SQLite.Interop.dll", EntryPoint = "sqlite3_extended_errcode", CallingConvention = CallingConvention.Cdecl)]
+        public static extern ExtendedResult sqlite3_extended_errcode(IntPtr db);
+
+        [DllImport("SQLite.Interop.dll", EntryPoint = "sqlite3_libversion_number", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int sqlite3_libversion_number();
+
+        [DllImport("SQLite.Interop.dll", EntryPoint = "sqlite3_sourceid", CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr sqlite3_sourceid();
+
+        #region Backup
+        
+        [DllImport("SQLite.Interop.dll", EntryPoint = "sqlite3_backup_init", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr sqlite3_backup_init(IntPtr destDB,
+                                                        [MarshalAs(UnmanagedType.LPStr)] string  destName, 
+                                                        IntPtr srcDB,
+                                                        [MarshalAs(UnmanagedType.LPStr)] string srcName);
+        
+        [DllImport("SQLite.Interop.dll", EntryPoint = "sqlite3_backup_step", CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result sqlite3_backup_step(IntPtr backup, int pageCount);
+        
+        [DllImport("SQLite.Interop.dll", EntryPoint = "sqlite3_backup_finish", CallingConvention = CallingConvention.Cdecl)]
+        public static extern Result sqlite3_backup_finish(IntPtr backup);
+        
+        [DllImport("SQLite.Interop.dll", EntryPoint = "sqlite3_backup_remaining", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int sqlite3_backup_remaining(IntPtr backup);
+        
+        [DllImport("SQLite.Interop.dll", EntryPoint = "sqlite3_backup_pagecount", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int sqlite3_backup_pagecount(IntPtr backup);
+        
+        [DllImport("SQLite.Interop.dll", EntryPoint = "sqlite3_sleep", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int sqlite3_sleep(int millis);
+        
+        #endregion
     }
 }
