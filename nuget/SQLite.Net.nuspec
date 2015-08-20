@@ -38,13 +38,14 @@
         <file src="SQLite.Net\SQLite.Net.dll" target="lib\Windows8\SQLite.Net.dll" />
         <file src="SQLite.Net.Platform.WinRT\SQLite.Net.Platform.WinRT.dll" target="lib\Windows8\SQLite.Net.Platform.WinRT.dll" />
 
-        <!-- Windows Phone 8.0 (ARM) -->
+        <!-- Can not compile, VS can't open property page of project -->
+        <!-- Windows Phone 8.0 (ARM) --><!--
         <file src="SQLite.Net\SQLite.Net.dll" target="lib\windowsphone8\ARM\SQLite.Net.dll" />
         <file src="SQLite.Net.Platform.WindowsPhone8\ARM\SQLite.Net.Platform.WindowsPhone8.dll" target="lib\windowsphone8\ARM\SQLite.Net.Platform.WindowsPhone8.dll" />
 
-        <!-- Windows Phone 8.0 (x86) -->
+        --><!-- Windows Phone 8.0 (x86) --><!--
         <file src="SQLite.Net\SQLite.Net.dll" target="lib\windowsphone8\x86\SQLite.Net.dll" />
-        <file src="SQLite.Net.Platform.WindowsPhone8\x86\SQLite.Net.Platform.WindowsPhone8.dll" target="lib\windowsphone8\x86\SQLite.Net.Platform.WindowsPhone8.dll" />
+        <file src="SQLite.Net.Platform.WindowsPhone8\x86\SQLite.Net.Platform.WindowsPhone8.dll" target="lib\windowsphone8\x86\SQLite.Net.Platform.WindowsPhone8.dll" />-->
 
         <!-- Win32 -->
         <file src="SQLite.Net\SQLite.Net.dll" target="lib\net4\SQLite.Net.dll" />

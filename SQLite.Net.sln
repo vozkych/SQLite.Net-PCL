@@ -39,7 +39,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stocks", "examples\Stocks\S
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{5BD976ED-6E22-44A3-A5A1-D6C6633BAADD}"
 	ProjectSection(SolutionItems) = preProject
+		nuget\build.bat = nuget\build.bat
 		.nuget\NuGet.Config = .nuget\NuGet.Config
+		nuget\SQLite.Net.Async.nuspec = nuget\SQLite.Net.Async.nuspec
+		nuget\SQLite.Net.nuspec = nuget\SQLite.Net.nuspec
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLite.Net", "src\SQLite.Net\SQLite.Net.csproj", "{4971D437-0694-4297-A8CC-146CE08C3BD9}"

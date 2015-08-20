@@ -1,4 +1,4 @@
-set version=3.7.1
+set version=3.7.2
 
 
 
@@ -32,7 +32,7 @@ copy /y ..\src\SQLite.Net.Platform.XamarinIOS.Unified\bin\Release\SQLite.Net.Pla
 
 
 @mkdir output
-del output\*.*
+del /q	output\*.*
 nuget pack SQLite.Net.nuspec -o output -Version %version%
 nuget pack SQLite.Net.Async.nuspec -o output -Version %version%
 
