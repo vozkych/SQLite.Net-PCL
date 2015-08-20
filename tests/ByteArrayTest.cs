@@ -1,7 +1,20 @@
 ﻿using System.Linq;
 using NUnit.Framework;
 using SQLite.Net.Attributes;
-using SQLite.Net.Platform.Win32;
+
+#if __WIN32__
+using SQLitePlatformTest = SQLite.Net.Platform.Win32.SQLitePlatformWin32;
+#elif WINDOWS_PHONE
+using SQLitePlatformTest = SQLite.Net.Platform.WindowsPhone8.SQLitePlatformWP8;
+#elif __WINRT__
+using SQLitePlatformTest = SQLite.Net.Platform.WinRT.SQLitePlatformWinRT;
+#elif __IOS__
+using SQLitePlatformTest = SQLite.Net.Platform.XamarinIOS.SQLitePlatformIOS;
+#elif __ANDROID__
+using SQLitePlatformTest = SQLite.Net.Platform.XamarinAndroid.SQLitePlatformAndroid;
+#else
+using SQLitePlatformTest = SQLite.Net.Platform.Generic.SQLitePlatformGeneric;
+#endif
 
 namespace SQLite.Net.Tests
 {
@@ -11,10 +24,10 @@ namespace SQLite.Net.Tests
         [SetUp]
         public void SetUp()
         {
-            _sqlite3Platform = new SQLitePlatformWin32();
+            _sqlite3Platform = new SQLitePlatformTest();
         }
 
-        private SQLitePlatformWin32 _sqlite3Platform;
+        private SQLitePlatformTest _sqlite3Platform;
 
         public class ByteArrayClass
         {
@@ -105,14 +118,14 @@ namespace SQLite.Net.Tests
         {
             //Byte Arrays for comparisson
             ByteArrayClass[] byteArrays = new ByteArrayClass[] {
-				new ByteArrayClass() { bytes = new byte[] { 1, 2, 3, 4, 250, 252, 253, 254, 255 } }, //Range check
-				new ByteArrayClass() { bytes = new byte[] { 0 } }, //null bytes need to be handled correctly
-				new ByteArrayClass() { bytes = new byte[] { 0, 0 } },
-				new ByteArrayClass() { bytes = new byte[] { 0, 1, 0 } },
-				new ByteArrayClass() { bytes = new byte[] { 1, 0, 1 } },
-				new ByteArrayClass() { bytes = new byte[] { } }, //Empty byte array should stay empty (and not become null)
-				new ByteArrayClass() { bytes = null } //Null should be supported
-			};
+                new ByteArrayClass() { bytes = new byte[] { 1, 2, 3, 4, 250, 252, 253, 254, 255 } }, //Range check
+                new ByteArrayClass() { bytes = new byte[] { 0 } }, //null bytes need to be handled correctly
+                new ByteArrayClass() { bytes = new byte[] { 0, 0 } },
+                new ByteArrayClass() { bytes = new byte[] { 0, 1, 0 } },
+                new ByteArrayClass() { bytes = new byte[] { 1, 0, 1 } },
+                new ByteArrayClass() { bytes = new byte[] { } }, //Empty byte array should stay empty (and not become null)
+                new ByteArrayClass() { bytes = null } //Null should be supported
+            };
 
             var database = new SQLiteConnection(_sqlite3Platform, TestPath.GetTempFileName());
             database.CreateTable<ByteArrayClass>();
@@ -142,14 +155,14 @@ namespace SQLite.Net.Tests
         {
             //Byte Arrays for comparisson
             ByteArrayClass[] byteArrays = new ByteArrayClass[] {
-				new ByteArrayClass() { bytes = new byte[] { 1, 2, 3, 4, 250, 252, 253, 254, 255 } }, //Range check
-				new ByteArrayClass() { bytes = new byte[] { 0 } }, //null bytes need to be handled correctly
-				new ByteArrayClass() { bytes = new byte[] { 0, 0 } },
-				new ByteArrayClass() { bytes = new byte[] { 0, 1, 0 } },
-				new ByteArrayClass() { bytes = new byte[] { 1, 0, 1 } },
-				new ByteArrayClass() { bytes = new byte[] { } }, //Empty byte array should stay empty (and not become null)
-				new ByteArrayClass() { bytes = null } //Null should be supported
-			};
+                new ByteArrayClass() { bytes = new byte[] { 1, 2, 3, 4, 250, 252, 253, 254, 255 } }, //Range check
+                new ByteArrayClass() { bytes = new byte[] { 0 } }, //null bytes need to be handled correctly
+                new ByteArrayClass() { bytes = new byte[] { 0, 0 } },
+                new ByteArrayClass() { bytes = new byte[] { 0, 1, 0 } },
+                new ByteArrayClass() { bytes = new byte[] { 1, 0, 1 } },
+                new ByteArrayClass() { bytes = new byte[] { } }, //Empty byte array should stay empty (and not become null)
+                new ByteArrayClass() { bytes = null } //Null should be supported
+            };
 
             var database = new SQLiteConnection(_sqlite3Platform, TestPath.GetTempFileName());
             database.CreateTable<ByteArrayClass>();

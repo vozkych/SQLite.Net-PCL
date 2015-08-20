@@ -3,7 +3,20 @@ using System.Diagnostics;
 using NUnit.Framework;
 using SQLite.Net.Attributes;
 using SQLite.Net.Interop;
-using SQLite.Net.Platform.Win32;
+
+#if __WIN32__
+using SQLitePlatformTest = SQLite.Net.Platform.Win32.SQLitePlatformWin32;
+#elif WINDOWS_PHONE
+using SQLitePlatformTest = SQLite.Net.Platform.WindowsPhone8.SQLitePlatformWP8;
+#elif __WINRT__
+using SQLitePlatformTest = SQLite.Net.Platform.WinRT.SQLitePlatformWinRT;
+#elif __IOS__
+using SQLitePlatformTest = SQLite.Net.Platform.XamarinIOS.SQLitePlatformIOS;
+#elif __ANDROID__
+using SQLitePlatformTest = SQLite.Net.Platform.XamarinAndroid.SQLitePlatformAndroid;
+#else
+using SQLitePlatformTest = SQLite.Net.Platform.Generic.SQLitePlatformGeneric;
+#endif
 
 namespace SQLite.Net.Tests
 {
@@ -29,7 +42,7 @@ namespace SQLite.Net.Tests
             public DbAcs(ISQLitePlatform sqlitePlatform, String path)
                 : base(sqlitePlatform, path)
             {
-                Trace = true;
+                TraceListener = DebugTraceListener.Instance;
             }
 
             public void buildTable()
@@ -47,7 +60,7 @@ namespace SQLite.Net.Tests
         [Test]
         public void TestBoolean()
         {
-            var sqlite3Platform = new SQLitePlatformWin32();
+            var sqlite3Platform = new SQLitePlatformTest();
             string tmpFile = TestPath.GetTempFileName();
             var db = new DbAcs(sqlite3Platform, tmpFile);
             db.buildTable();

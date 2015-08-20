@@ -5,13 +5,27 @@ using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
 using SQLite.Net.Attributes;
-using SQLite.Net.Platform.Win32;
+
+#if __WIN32__
+using SQLitePlatformTest = SQLite.Net.Platform.Win32.SQLitePlatformWin32;
+#elif WINDOWS_PHONE
+using SQLitePlatformTest = SQLite.Net.Platform.WindowsPhone8.SQLitePlatformWP8;
+#elif __WINRT__
+using SQLitePlatformTest = SQLite.Net.Platform.WinRT.SQLitePlatformWinRT;
+#elif __IOS__
+using SQLitePlatformTest = SQLite.Net.Platform.XamarinIOS.SQLitePlatformIOS;
+#elif __ANDROID__
+using SQLitePlatformTest = SQLite.Net.Platform.XamarinAndroid.SQLitePlatformAndroid;
+#else
+using SQLitePlatformTest = SQLite.Net.Platform.Generic.SQLitePlatformGeneric;
+#endif
 
 namespace SQLite.Net.Tests
 {
-    internal class SelectTest
+    [TestFixture]
+    public class Select2Test
     {
-        public class TestObj
+        class TestObj
         {
             [AutoIncrement, PrimaryKey]
             public int Id { get; set; }
@@ -29,7 +43,7 @@ namespace SQLite.Net.Tests
         public class TestDb : SQLiteConnection
         {
             public TestDb(String path)
-                : base(new SQLitePlatformWin32(), path)
+                : base(new SQLitePlatformTest(), path)
             {
                 CreateTable<TestObj>();
             }
@@ -38,16 +52,16 @@ namespace SQLite.Net.Tests
         [Test]
         public void SelectString()
         {
-            var db = new SkipTest.TestDb(TestPath.GetTempFileName());
+            var db = new TestDb(TestPath.GetTempFileName());
 
-            var t = new SkipTest.TestObj()
+            var t = new TestObj
             {
                 Content = "toto",
                 Id = 0
             };
             db.Insert(t);
 
-            var results = db.Table<SkipTest.TestObj>().Select(cp => cp.Content).ToList();
+            var results = db.Table<TestObj>().Select(cp => cp.Content).ToList();
             Assert.IsNotNull(results);
             Assert.AreEqual("toto",results[0]);
         }

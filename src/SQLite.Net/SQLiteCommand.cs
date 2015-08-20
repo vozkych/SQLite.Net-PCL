@@ -221,9 +221,9 @@ namespace SQLite.Net
                 if (r == Result.Row)
                 {
                     var colType = _sqlitePlatform.SQLiteApi.ColumnType(stmt, 0);
-                    var clrType = Nullable.GetUnderlyingType(typeof (T)) ?? typeof (T);
                     if (colType != ColType.Null)
                     {
+                        var clrType = Nullable.GetUnderlyingType(typeof (T)) ?? typeof (T);
                         val = (T) ReadCol(stmt, 0, colType, clrType);
                     }
                 }

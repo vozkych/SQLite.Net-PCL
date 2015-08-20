@@ -4,7 +4,21 @@ using System.Diagnostics;
 using System.Linq;
 using NUnit.Framework;
 using SQLite.Net.Attributes;
-using SQLite.Net.Platform.Win32;
+
+#if __WIN32__
+using SQLitePlatformTest = SQLite.Net.Platform.Win32.SQLitePlatformWin32;
+#elif WINDOWS_PHONE
+using SQLitePlatformTest = SQLite.Net.Platform.WindowsPhone8.SQLitePlatformWP8;
+#elif __WINRT__
+using SQLitePlatformTest = SQLite.Net.Platform.WinRT.SQLitePlatformWinRT;
+#elif __IOS__
+using SQLitePlatformTest = SQLite.Net.Platform.XamarinIOS.SQLitePlatformIOS;
+#elif __ANDROID__
+using SQLitePlatformTest = SQLite.Net.Platform.XamarinAndroid.SQLitePlatformAndroid;
+#else
+using SQLitePlatformTest = SQLite.Net.Platform.Generic.SQLitePlatformGeneric;
+#endif
+
 
 namespace SQLite.Net.Tests
 {
@@ -69,7 +83,7 @@ namespace SQLite.Net.Tests
         public class TestDb : SQLiteConnection
         {
             public TestDb(String path)
-                : base(new SQLitePlatformWin32(), path)
+                : base(new SQLitePlatformTest(), path)
             {
                 CreateTable<TestObj>();
                 CreateTable<TestObj2>();
@@ -88,7 +102,7 @@ namespace SQLite.Net.Tests
                     Text = "I am"
                 };
             TestObj[] objs = q.ToArray();
-            _db.Trace = false;
+            _db.TraceListener = DebugTraceListener.Instance;
 
             var sw = new Stopwatch();
             sw.Start();
@@ -205,7 +219,7 @@ namespace SQLite.Net.Tests
         [Test]
         public void InsertOrReplace()
         {
-            _db.Trace = true;
+            _db.TraceListener = DebugTraceListener.Instance;
             _db.InsertAll(from i in Enumerable.Range(1, 20)
                 select new TestObj
                 {

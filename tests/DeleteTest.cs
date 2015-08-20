@@ -14,11 +14,10 @@ namespace SQLite.Net.Tests
             public int Id { get; set; }
 
             public int Datum { get; set; }
-
             public string Test { get; set; }
         }
 
-        private class TestTableMulti
+        private class TestTableMultiPK
         {
             [PrimaryKey]
             public string Id { get; set; }
@@ -36,7 +35,7 @@ namespace SQLite.Net.Tests
         {
             var db = new TestDb();
             db.CreateTable<TestTable>();
-            IEnumerable<TestTable> items = from i in Enumerable.Range(0, Count)
+            var items = from i in Enumerable.Range(0, Count)
                 select new TestTable
                 {
                     Datum = 1000 + i, Test = "Hello World"
@@ -44,16 +43,16 @@ namespace SQLite.Net.Tests
             db.InsertAll(items);
             Assert.AreEqual(Count, db.Table<TestTable>().Count());
 
-            db.CreateTable<TestTableMulti>();
+            db.CreateTable<TestTableMultiPK>();
             var items2 = from i in Enumerable.Range(0, Count)
-                select new TestTableMulti
+                select new TestTableMultiPK
                 {
                     Id = "t" + i,
                     Id2 = "t" + i,
                     Datum = 1000 + i
                 };
             db.InsertAll(items2);
-            Assert.AreEqual(Count, db.Table<TestTableMulti>().Count());
+            Assert.AreEqual(Count, db.Table<TestTableMultiPK>().Count());
             
             return db;
         }
@@ -61,12 +60,63 @@ namespace SQLite.Net.Tests
         [Test]
         public void DeleteAll()
         {
-            SQLiteConnection db = CreateDb();
+            var db = CreateDb();
 
-            int r = db.DeleteAll<TestTable>();
+            var r = db.DeleteAll<TestTable>();
 
             Assert.AreEqual(Count, r);
             Assert.AreEqual(0, db.Table<TestTable>().Count());
+        }
+
+        [Test]
+        public void DeleteAllWithPredicate()
+        {
+            var db = CreateDb();
+
+            var r = db.Table<TestTable>().Delete(p => p.Test == "Hello World");
+
+            Assert.AreEqual(Count, r);
+            Assert.AreEqual(0, db.Table<TestTable>().Count());
+        }
+
+        [Test]
+        public void DeleteAllWithPredicateHalf()
+        {
+            var db = CreateDb();
+            db.Insert(new TestTable
+            {
+                Datum = 1,
+                Test = "Hello World 2"
+            });
+
+            var r = db.Table<TestTable>().Delete(p => p.Test == "Hello World");
+
+            Assert.AreEqual(Count, r);
+            Assert.AreEqual(1, db.Table<TestTable>().Count());
+        }
+
+        [Test]
+        public void DeleteWithWhereAndPredicate()
+        {
+            var db = CreateDb();
+            var testString = "TestData";
+            var first = db.Insert(new TestTable
+            {
+                Datum = 3,
+                Test = testString
+
+            });
+            var second = db.Insert(new TestTable
+            {
+                Datum = 4,
+                Test = testString
+            });
+
+            //Should only delete first
+            var r = db.Table<TestTable>().Where(t => t.Datum == 3).Delete(t => t.Test == testString);
+
+            Assert.AreEqual(1, r);
+            Assert.AreEqual(Count + 1, db.Table<TestTable>().Count());
         }
 
         [Test]
@@ -89,9 +139,9 @@ namespace SQLite.Net.Tests
         [Test]
         public void DeleteEntityOne()
         {
-            SQLiteConnection db = CreateDb();
+            var db = CreateDb();
 
-            int r = db.Delete(db.Get<TestTable>(1));
+            var r = db.Delete(db.Get<TestTable>(1));
 
             Assert.AreEqual(1, r);
             Assert.AreEqual(Count - 1, db.Table<TestTable>().Count());
@@ -100,20 +150,25 @@ namespace SQLite.Net.Tests
         [Test]
         public void DeletePKNone()
         {
-            SQLiteConnection db = CreateDb();
+            var db = CreateDb();
 
-            int r = db.Delete<TestTable>(new []{348597});
+            var r = db.Delete<TestTable>(new []{348597});
+            //Breaking change: don't use this version as it already interfere with db.Delete(object)
+            //r = db.Delete<TestTable>(348597); 
 
             Assert.AreEqual(0, r);
             Assert.AreEqual(Count, db.Table<TestTable>().Count());
+
         }
 
         [Test]
         public void DeletePKOne()
         {
-            SQLiteConnection db = CreateDb();
+            var db = CreateDb();
 
-            int r = db.Delete<TestTable>(new []{1});
+            var r = db.Delete<TestTable>(new []{1});
+            //Breaking change: don't use this version as it already interfere with db.Delete(object)
+            //var r = db.Delete<TestTable>(1);
 
             Assert.AreEqual(1, r);
             Assert.AreEqual(Count - 1, db.Table<TestTable>().Count());
@@ -127,14 +182,14 @@ namespace SQLite.Net.Tests
             //Full key
             var s1 = "t12";
             var s2 = "t12";
-            var r = db.Delete<TestTableMulti>(new []{s1,s2});
+            var r = db.Delete<TestTableMultiPK>(new []{s1,s2});
             Assert.AreEqual(1, r);
-            Assert.AreEqual(Count-1, db.Table<TestTableMulti>().Count());
+            Assert.AreEqual(Count-1, db.Table<TestTableMultiPK>().Count());
 
             //Partial key
-            var r2 = db.Delete<TestTableMulti>(new []{"t13"});
+            var r2 = db.Delete<TestTableMultiPK>(new []{"t13"});
             Assert.AreEqual(1, r2);
-            Assert.AreEqual(Count-2, db.Table<TestTableMulti>().Count());
+            Assert.AreEqual(Count-2, db.Table<TestTableMultiPK>().Count());
         }
     }
 }

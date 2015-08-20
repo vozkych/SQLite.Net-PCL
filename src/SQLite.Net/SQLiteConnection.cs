@@ -615,6 +615,12 @@ namespace SQLite.Net
         [PublicAPI]
         public SQLiteCommand CreateCommand(string cmdText, params object[] args)
         {
+            return CreateCommandWithArgs(cmdText, args);
+        }
+
+        [PublicAPI]
+        public SQLiteCommand CreateCommandWithArgs(string cmdText, object[] args)
+        {
             if (!_open)
             {
                 throw SQLiteException.New(Result.Error, "Cannot create commands from unopened database");
@@ -628,6 +634,7 @@ namespace SQLite.Net
             }
             return cmd;
         }
+
 
         /// <summary>
         ///     Creates a SQLiteCommand given the command text (SQL) with arguments. Place a '?'
@@ -648,6 +655,12 @@ namespace SQLite.Net
         /// </returns>
         [PublicAPI]
         public int Execute(string query, params object[] args)
+        {
+            return ExecuteWithArgs(query, args);
+        }
+
+        [PublicAPI]
+        public int ExecuteWithArgs(string query, object[] args)
         {
             var cmd = CreateCommand(query, args);
 
@@ -673,6 +686,7 @@ namespace SQLite.Net
 
             return r;
         }
+
 
         [PublicAPI]
         public T ExecuteScalar<T>(string query, params object[] args)
@@ -1802,17 +1816,17 @@ namespace SQLite.Net
         {
             if (primaryKey == null)
                 return 0;
-            var pks = primaryKey.Cast<object>().ToList();
-            if (pks.Count == 0)
+            var pks = primaryKey.Cast<object>().ToArray();
+            if (pks.Length == 0)
                 return 0;
             var map = GetMapping(typeof(T));
             if (map.PK == null)
                 throw new NotSupportedException("Cannot delete " + map.TableName + ": it has no PK");
-            if (pks.Count > map.PKs.Count)
+            if (pks.Length > map.PKs.Count)
                 throw new ArgumentException("primaryKeys array length can not be greater than the number of primary keys");
 
-            var q = string.Format("delete from \"{0}\" where {1}", map.TableName, map.PkWhereSqlForPartialKeys(pks.Count));
-            return Execute(q, pks);
+            var q = string.Format("delete from \"{0}\" where {1}", map.TableName, map.PkWhereSqlForPartialKeys(pks.Length));
+            return ExecuteWithArgs(q, pks);
         }
 
         /// <summary>
@@ -1826,8 +1840,8 @@ namespace SQLite.Net
         {
             if (keys == null)
                 return 0;
-            var theKeys = keys.Cast<object>().ToList();
-            if (theKeys.Count == 0)
+            var theKeys = keys.Cast<object>().ToArray();
+            if (theKeys.Length == 0)
                 return 0;
             var map = GetMapping(typeof(T));
             if (map.PK == null)
@@ -1835,9 +1849,9 @@ namespace SQLite.Net
             if (map.PKs.Count != 1)
                 throw new ArgumentException("only single primary keys are supported by this method");
 
-            var keyListParams = String.Join(",", Enumerable.Repeat('?', theKeys.Count));
+            var keyListParams = String.Join(",", Enumerable.Repeat('?', theKeys.Length));
             var q = string.Format("delete from \"{0}\" where \"{1}\" in ({2})", map.TableName, map.PKs[0].Name, keyListParams);
-            return Execute(q, theKeys);
+            return ExecuteWithArgs(q, theKeys);
         }
 
         /// <summary>

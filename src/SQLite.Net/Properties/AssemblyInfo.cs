@@ -8,11 +8,10 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyTitle("SQLite.Net")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Øystein Krog, Benjamin Mayrargue")]
+[assembly: AssemblyCompany("Øystein Krog")]
 [assembly: AssemblyProduct("SQLite.Net")]
-[assembly: AssemblyCopyright("Copyright © Øystein Krog, Krueger Systems Inc., Benjamin Mayrargue Vapolia SARL")]
+[assembly: AssemblyCopyright("Copyright © Øystein Krog, Krueger Systems Inc.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-
 [assembly: InternalsVisibleTo("SQLite.Net.Tests")]
 [assembly: InternalsVisibleTo("SQLite.Net.Async")]
