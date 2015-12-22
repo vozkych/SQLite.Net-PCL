@@ -1,6 +1,35 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/ujwbkk2bp3ipnoxg?svg=true)](https://ci.appveyor.com/project/oysteinkrog/sqlite-net-pcl)
 
-# Fork
+# Fork (0)
+
+This is a fork of oysteinkrog fork which is a fork of the original sqlite-net library (https://github.com/praeclarum/sqlite-net), which aims to improve the code quality by using modern technologies such as PCL (portable class library).
+
+# New Features compared to oysteinkrog
+
+ Multiple primary key support		
+ Ex: 		
+ 		
+     public class PrivacyGroupItem		
+     {		
+ 		[PrimaryKey]		
+ 		public int GroupId {get;set;}		
+ 		
+ 		[PrimaryKey]		
+ 		public int ContactId {get;set;}		
+     }		
+ 		
+     db.Delete<PrivacyGroupItem>(groupId, contactId);		
+ 		
+ 		
+ Projections now have the expected result type		
+ Ex: `IEnumerable<int> ids = from pgi in db.Table<PrivacyGroupItem>() where pgi.PrivacyGroupId == groupId select pgi.ContactId;`		
+ 		
+ New method to query simple types (ie: string, ...) as Query<T> can query only complex types (ie: T must be a class/stuct with a default constructor)		
+ Signature: `IEnumerable<T> ExecuteSimpleQuery<T>(string query, params object[] args)`		
+ Usage: `ExecuteSimpleQuery<string>("select 'drop table ' || name || ';' from sqlite_master where type = 'table'")`		
+
+
+# Fork (1)
 
 This is a fork of the original sqlite-net library (https://github.com/praeclarum/sqlite-net), which aims to improve the code quality by using modern technologies such as PCL (portable class library).
 
