@@ -152,17 +152,17 @@ namespace SQLite.Net
 		{
                 throw new NotSupportedException("Cannot delete if an offset has been specified");
             }
-				var lambda = (LambdaExpression)predExpr;
+            var lambda = (LambdaExpression) predExpr;
 				var pred = lambda.Body;
             if (_where != null)
             {
                 pred = Expression.AndAlso(pred, _where);
             }
-				var args = new List<object> ();
-				var w = CompileExpr (pred, args);
+            var args = new List<object>();
+            var w = CompileExpr(pred, args);
 				var cmdText = "delete from \"" + Table.TableName + "\"";
 				cmdText += " where " + w.CommandText;
-				var command = Connection.CreateCommand (cmdText, args.ToArray ());
+            var command = Connection.CreateCommand(cmdText, args.ToArray());
 
             var result = command.ExecuteNonQuery();
 				return result;
@@ -310,12 +310,13 @@ namespace SQLite.Net
             var args = new List<object>();
             if (_where != null)
             {
-                CompileResult w = CompileExpr(_where, args);
+                var w = CompileExpr(_where, args);
                 cmdText.Append(" where ").Append(w.CommandText);
             }
             if ((_orderBys != null) && (_orderBys.Count > 0))
             {
-                string t = string.Join(", ", _orderBys.Select(o => "\"" + o.ColumnName + "\"" + (o.Ascending ? "" : " desc")).ToArray());
+                var t = string.Join(", ",
+                    _orderBys.Select(o => "\"" + o.ColumnName + "\"" + (o.Ascending ? "" : " desc")).ToArray());
                 cmdText.Append(" order by ").Append(t);
             }
             if (_limit.HasValue)
@@ -430,6 +431,10 @@ namespace SQLite.Net
                 else if (call.Method.Name == "ToLower")
                 {
                     sqlCall.AppendFormat("(lower({0}))", obj.CommandText);
+                }
+                else if (call.Method.Name == "ToUpper")
+                {
+                    sqlCall.AppendFormat("(upper({0}))", obj.CommandText);
                 }
                 else
                 {

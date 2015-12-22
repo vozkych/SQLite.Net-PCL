@@ -4,21 +4,6 @@ using System.Linq;
 using NUnit.Framework;
 using SQLite.Net.Attributes;
 
-#if __WIN32__
-using SQLitePlatformTest = SQLite.Net.Platform.Win32.SQLitePlatformWin32;
-#elif WINDOWS_PHONE
-using SQLitePlatformTest = SQLite.Net.Platform.WindowsPhone8.SQLitePlatformWP8;
-#elif __WINRT__
-using SQLitePlatformTest = SQLite.Net.Platform.WinRT.SQLitePlatformWinRT;
-#elif __IOS__
-using SQLitePlatformTest = SQLite.Net.Platform.XamarinIOS.SQLitePlatformIOS;
-#elif __ANDROID__
-using SQLitePlatformTest = SQLite.Net.Platform.XamarinAndroid.SQLitePlatformAndroid;
-#else
-using SQLitePlatformTest = SQLite.Net.Platform.Generic.SQLitePlatformGeneric;
-#endif
-
-
 namespace SQLite.Net.Tests
 {
     [TestFixture]
@@ -52,19 +37,19 @@ namespace SQLite.Net.Tests
             int n = 100;
 
             IEnumerable<TestObj> cq = from i in Enumerable.Range(1, n)
-                select new TestObj
-                {
-                    Order = i
-                };
+                                      select new TestObj
+                                      {
+                                          Order = i
+                                      };
             TestObj[] objs = cq.ToArray();
-            var db = new TestDb(TestPath.GetTempFileName());
+            var db = new TestDb(TestPath.CreateTemporaryDatabase());
 
             int numIn = db.InsertAll(objs);
             Assert.AreEqual(numIn, n, "Num inserted must = num objects");
 
             TableQuery<TestObj> q = from o in db.Table<TestObj>()
-                orderby o.Order
-                select o;
+                                    orderby o.Order
+                                    select o;
 
             TableQuery<TestObj> qs1 = q.Skip(1);
             List<TestObj> s1 = qs1.ToList();
@@ -89,7 +74,7 @@ namespace SQLite.Net.Tests
                                           Order = i
                                       };
             TestObj[] objs = cq.ToArray();
-            var db = new TestDb(TestPath.GetTempFileName());
+            var db = new TestDb(TestPath.CreateTemporaryDatabase());
 
             int numIn = db.InsertAll(objs);
             Assert.AreEqual(numIn, n, "Num inserted must = num objects");
@@ -129,7 +114,7 @@ namespace SQLite.Net.Tests
                                           Order = i
                                       };
             TestObj[] objs = cq.ToArray();
-            var db = new TestDb(TestPath.GetTempFileName());
+            var db = new TestDb(TestPath.CreateTemporaryDatabase());
 
             int numIn = db.InsertAll(objs);
             Assert.AreEqual(numIn, n, "Num inserted must = num objects");

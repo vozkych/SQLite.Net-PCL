@@ -68,53 +68,51 @@ namespace SQLite.Net
                 return extraMapping;
             }
 
-            if (clrType == typeof(bool) || clrType == typeof(byte) || clrType == typeof(ushort) || 
-            clrType == typeof(sbyte) || clrType == typeof(short) || clrType == typeof(int) || 
-            clrType == typeof(uint) ||
+            if (clrType == typeof (bool) || clrType == typeof (byte) || clrType == typeof (ushort) ||
+                clrType == typeof (sbyte) || clrType == typeof (short) || clrType == typeof (int) ||
+                clrType == typeof (uint) || clrType == typeof (long) ||
                 interfaces.Contains(typeof (ISerializable<bool>)) ||
                 interfaces.Contains(typeof (ISerializable<byte>)) ||
                 interfaces.Contains(typeof (ISerializable<ushort>)) ||
                 interfaces.Contains(typeof (ISerializable<sbyte>)) ||
                 interfaces.Contains(typeof (ISerializable<short>)) ||
                 interfaces.Contains(typeof (ISerializable<int>)) ||
-                interfaces.Contains(typeof (ISerializable<uint>)) )
-            {
-                return "integer";
-            }
-
-            if (clrType == typeof (ulong) || clrType == typeof (long)||
+                interfaces.Contains(typeof (ISerializable<uint>)) ||
                 interfaces.Contains(typeof (ISerializable<long>)) ||
                 interfaces.Contains(typeof (ISerializable<ulong>)))
             {
-                return "bigint";
+                return "integer";
             }
-
-            if (clrType == typeof (float) || clrType == typeof (double) || clrType == typeof (decimal))
+            if (clrType == typeof (float) || clrType == typeof (double) || 
+                interfaces.Contains(typeof (ISerializable<float>)) ||
+                interfaces.Contains(typeof (ISerializable<double>)))
             {
-                return "float";
+                return "real";
             }
-            if (clrType == typeof(XElement))
+            if (clrType == typeof (decimal) ||
+                interfaces.Contains(typeof (ISerializable<decimal>)))
             {
-                return "nvarchar"; //SQLite ignores the length //See http://www.sqlite.org/datatype3.html
+                return "numeric";
             }
-            if (clrType == typeof (string) || interfaces.Contains(typeof (ISerializable<string>)))
+            if (clrType == typeof (string) || clrType == typeof(XElement)
+            || interfaces.Contains(typeof (ISerializable<string>))
+            || interfaces.Contains(typeof (ISerializable<XElement>))
+            )
             {
-                var len = p.MaxStringLength;
-                if(len.HasValue)
-                    return "nvarchar(" + len.Value + ")";
-                return "nvarchar";
+             //SQLite ignores the length //See http://www.sqlite.org/datatype3.html
+                return "text";
             }
             if (clrType == typeof (TimeSpan) || interfaces.Contains(typeof (ISerializable<TimeSpan>)))
             {
-                return "bigint";
+                return "integer";
             }
             if (clrType == typeof (DateTime) || interfaces.Contains(typeof (ISerializable<DateTime>)))
             {
-                return storeDateTimeAsTicks ? "bigint" : "datetime";
+                return storeDateTimeAsTicks ? "integer" : "numeric";
             }
             if (clrType == typeof (DateTimeOffset))
             {
-                return "bigint";
+                return "integer";
             }
             if (clrType.GetTypeInfo().IsEnum)
             {
@@ -126,7 +124,7 @@ namespace SQLite.Net
             }
             if (clrType == typeof (Guid) || interfaces.Contains(typeof (ISerializable<Guid>)))
             {
-                return "varchar(36)";
+                return "text";
             }
             if (serializer != null && serializer.CanDeserialize(clrType))
             {

@@ -56,6 +56,7 @@ namespace SQLite.Net
 #pragma warning restore 649
         private readonly Random _rand = new Random();
         private readonly IDictionary<string, TableMapping> _tableMappings;
+		private readonly object _tableMappingsLocks;
         private TimeSpan _busyTimeout;
         private long _elapsedMilliseconds;
         private IDictionary<TableMapping, ActiveInsertCommand> _insertCommandCache;
@@ -156,6 +157,7 @@ namespace SQLite.Net
             Resolver = resolver ?? ContractResolver.Current;
 
             _tableMappings = tableMappings ?? new Dictionary<string, TableMapping>();
+			_tableMappingsLocks = new object();
 
             if (string.IsNullOrEmpty(databasePath))
             {
@@ -239,7 +241,13 @@ namespace SQLite.Net
         [JetBrains.Annotations.NotNull]
         public IEnumerable<TableMapping> TableMappings
         {
-            get { return _tableMappings.Values; }
+            get
+			{
+				lock (_tableMappingsLocks)
+				{
+					return _tableMappings.Values.ToList();
+				}
+			}
         }
 
         /// <summary>
@@ -297,9 +305,12 @@ namespace SQLite.Net
         [PublicAPI]
         public TableMapping GetMapping(Type type, CreateFlags createFlags = CreateFlags.None)
         {
+			lock (_tableMappingsLocks)
+			{
             TableMapping map;
             return _tableMappings.TryGetValue(type.FullName, out map) ? map : CreateAndSetMapping(type, createFlags, _tableMappings);
             }
+        }
 
         private TableMapping CreateAndSetMapping(Type type, CreateFlags createFlags, IDictionary<string, TableMapping> mapTable)
             {
@@ -558,6 +569,19 @@ namespace SQLite.Net
             return Query<ColumnInfo>(query);
         }
 
+		[PublicAPI]
+		public void MigrateTable<T>()
+		{
+			MigrateTable(typeof(T));
+		}
+
+		[PublicAPI]
+		public void MigrateTable(Type t)
+		{
+			var map = GetMapping(t);
+			MigrateTable(map);
+		}
+
         private void MigrateTable(TableMapping map)
         {
             var existingCols = GetTableInfo(map.TableName);
@@ -686,7 +710,6 @@ namespace SQLite.Net
 
             return r;
         }
-
 
         [PublicAPI]
         public T ExecuteScalar<T>(string query, params object[] args)
@@ -1365,6 +1388,27 @@ namespace SQLite.Net
             return c;
         }
 
+        [PublicAPI]
+        public int InsertOrIgnoreAll (IEnumerable objects)
+        {
+            return InsertAll (objects, "OR IGNORE");
+        }
+
+        [PublicAPI]
+        public int InsertOrIgnore (object obj)
+        {
+            if (obj == null) {
+                return 0;
+            }
+            return Insert (obj, "OR IGNORE", obj.GetType ());
+        }
+
+        [PublicAPI]
+        public int InsertOrIgnore (object obj, Type objType)
+        {
+            return Insert (obj, "OR IGNORE", objType);
+        }
+
         /// <summary>
         ///     Inserts the given object and retrieves its
         ///     auto incremented primary key if it has one.
@@ -2000,21 +2044,21 @@ namespace SQLite.Net
 
         public class ColumnInfo
         {
-//			public int cid { get; set; }
+            //			public int cid { get; set; }
 
             [PublicAPI]
             [Column("name")]
             public string Name { get; set; }
 
-//			[Column ("type")]
-//			public string ColumnType { get; set; }
+            //			[Column ("type")]
+            //			public string ColumnType { get; set; }
 
             [PublicAPI]
             public int notnull { get; set; }
 
-//			public string dflt_value { get; set; }
+            //			public string dflt_value { get; set; }
 
-//			public int pk { get; set; }
+            //			public int pk { get; set; }
 
             [PublicAPI]
             public override string ToString()

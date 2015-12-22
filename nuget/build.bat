@@ -1,9 +1,9 @@
-set version=3.7.2
-
+set version=103.1.101
 
 
 mkdir SQLite.Net
 copy /y ..\src\SQLite.Net\bin\Release\SQLite.Net.dll SQLite.Net
+type nul >SQLite.Net\_._
 
 mkdir SQLite.Net.Async
 copy /y ..\src\SQLite.Net.Async\bin\Release\SQLite.Net.Async.dll SQLite.Net.Async
@@ -33,10 +33,11 @@ copy /y ..\src\SQLite.Net.Platform.XamarinIOS.Unified\bin\Release\SQLite.Net.Pla
 
 @mkdir output
 del /q	output\*.*
+nuget pack SQLite.Net.Core.nuspec -o output -Version %version%
 nuget pack SQLite.Net.nuspec -o output -Version %version%
 nuget pack SQLite.Net.Async.nuspec -o output -Version %version%
 
 
 
-nuget push output\*.nupkg -Source http://nugets.vapolia.fr/
+nuget push output\*.nupkg -Source http://nugets.vapolia.fr
 
