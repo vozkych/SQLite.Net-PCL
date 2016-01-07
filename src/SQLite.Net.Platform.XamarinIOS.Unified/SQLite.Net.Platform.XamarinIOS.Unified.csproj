@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -9,6 +9,8 @@
     <RootNamespace>SQLite.Net.Platform.XamarinIOS.Unified</RootNamespace>
     <IPhoneResourcePrefix>Resources</IPhoneResourcePrefix>
     <AssemblyName>SQLite.Net.Platform.XamarinIOS.Unified</AssemblyName>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -41,7 +43,6 @@
     </Compile>
     <Compile Include="ReflectionServiceIOS.cs" />
     <Compile Include="SQLiteApiIOS.cs" />
-    <Compile Include="SQLiteApiIOSInternal.cs" />
     <Compile Include="SQLitePlatformIOS.cs" />
     <Compile Include="StopwatchFactoryIOS.cs" />
     <Compile Include="VolatileServiceIOS.cs" />
@@ -53,4 +54,14 @@
       <Name>SQLite.Net</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="..\..\packages\SQLitePCL.raw.0.8.5-pre3\build\Xamarin.iOS10\SQLitePCL.raw.targets" Condition="Exists('..\..\packages\SQLitePCL.raw.0.8.5-pre3\build\Xamarin.iOS10\SQLitePCL.raw.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\SQLitePCL.raw.0.8.5-pre3\build\Xamarin.iOS10\SQLitePCL.raw.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\SQLitePCL.raw.0.8.5-pre3\build\Xamarin.iOS10\SQLitePCL.raw.targets'))" />
+  </Target>
 </Project>

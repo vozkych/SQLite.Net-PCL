@@ -186,10 +186,10 @@ namespace SQLite.Net.Platform.WinRT
             return SQLite3.LastInsertRowid(dbHandle.InternalDbHandle);
         }
 
-        public Result Open(byte[] filename, out IDbHandle db, int flags, IntPtr zvfs)
+        public Result Open(string filename, out IDbHandle db, int flags, string vfs)
         {
             Sqlite3DatabaseHandle internalDbHandle;
-            var ret = (Result)SQLite3.Open(filename, out internalDbHandle, flags, zvfs);
+            var ret = (Result)SQLite3.Open(filename, out internalDbHandle, flags, IntPtr.Zero);
             db = new DbHandle(internalDbHandle);
             return ret;
         }

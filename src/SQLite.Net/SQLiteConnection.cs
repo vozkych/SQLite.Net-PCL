@@ -167,8 +167,7 @@ namespace SQLite.Net
             DatabasePath = databasePath;
 
             IDbHandle handle;
-            var databasePathAsBytes = GetNullTerminatedUtf8(DatabasePath);
-            var r = Platform.SQLiteApi.Open(databasePathAsBytes, out handle, (int) openFlags, IntPtr.Zero);
+            var r = Platform.SQLiteApi.Open(DatabasePath, out handle, (int) openFlags, null);
 
             Handle = handle;
             if (r != Result.OK)
@@ -278,15 +277,6 @@ namespace SQLite.Net
                 var msg = Platform.SQLiteApi.Errmsg16(Handle);
                 throw SQLiteException.New(r, msg);
             }
-        }
-
-        [JetBrains.Annotations.NotNull]
-        private static byte[] GetNullTerminatedUtf8(string s)
-        {
-            var utf8Length = Encoding.UTF8.GetByteCount(s);
-            var bytes = new byte[utf8Length + 1];
-            Encoding.UTF8.GetBytes(s, 0, s.Length, bytes, 0);
-            return bytes;
         }
 
         /// <summary>
@@ -1948,9 +1938,8 @@ namespace SQLite.Net
             string destDBPath = this.DatabasePath + "." + DateTime.UtcNow.ToString("yyyy-MM-dd_HH-mm-ss-fff");
 
             IDbHandle destDB;
-            byte[] databasePathAsBytes = GetNullTerminatedUtf8(destDBPath);
-            Result r = sqliteApi.Open(databasePathAsBytes, out destDB,
-                (int) (SQLiteOpenFlags.Create | SQLiteOpenFlags.ReadWrite), IntPtr.Zero);
+            Result r = sqliteApi.Open(destDBPath, out destDB,
+                (int) (SQLiteOpenFlags.Create | SQLiteOpenFlags.ReadWrite), null);
 
             if (r != Result.OK)
             {

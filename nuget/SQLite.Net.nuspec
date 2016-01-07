@@ -19,8 +19,11 @@
             <group targetFramework="wp8">
                 <dependency id="sqlite-net-wp8" version="3.8.5"/>
             </group>
-            <group>
-		        <dependency id="SQLite.Net.Core-PCL" version="103.1.101"/>
+          <group targetFramework="Xamarin.iOS">
+            <dependency id="SQLitePCL.raw" version="0.8.4" />
+          </group>
+          <group>
+		          <dependency id="SQLite.Net.Core-PCL" version="103.1.101"/>
             </group>
         </dependencies>
     </metadata>

@@ -1,18 +1,29 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using SQLite.Net.Interop;
 
 namespace SQLite.Net.Platform.XamarinAndroid
 {
     public class SQLiteApiAndroid : ISQLiteApiExt
     {
-        public Result Open(byte[] filename, out IDbHandle db, int flags, IntPtr zvfs)
+        public Result Open(string filename, out IDbHandle db, int flags, string vfs)
         {
             IntPtr dbPtr;
-            Result r = SQLiteApiAndroidInternal.sqlite3_open_v2(filename, out dbPtr, flags, zvfs);
+            var databasePathAsBytes = GetNullTerminatedUtf8(filename);
+            Result r = SQLiteApiAndroidInternal.sqlite3_open_v2(databasePathAsBytes, out dbPtr, flags, IntPtr.Zero);
             db = new DbHandle(dbPtr);
             return r;
         }
+
+        private static byte[] GetNullTerminatedUtf8(string s)
+        {
+            var utf8Length = Encoding.UTF8.GetByteCount(s);
+            var bytes = new byte[utf8Length + 1];
+            Encoding.UTF8.GetBytes(s, 0, s.Length, bytes, 0);
+            return bytes;
+        }
+
 
         public ExtendedResult ExtendedErrCode(IDbHandle db)
         {
@@ -253,7 +264,8 @@ namespace SQLite.Net.Platform.XamarinAndroid
         public int Sleep(int millis) {
         	return SQLiteApiAndroidInternal.sqlite3_sleep(millis);
         }
-        
+
+
         private struct DbBackupHandle : IDbBackupHandle {
         	public DbBackupHandle(IntPtr dbBackupPtr) : this() {
         		DbBackupPtr = dbBackupPtr;
