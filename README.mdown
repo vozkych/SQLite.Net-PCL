@@ -4,6 +4,21 @@
 
 This is a fork of oysteinkrog fork which is a fork of the original sqlite-net library (https://github.com/praeclarum/sqlite-net), which aims to improve the code quality by using modern technologies such as PCL (portable class library).
 
+The iOS version now uses SQLitePCL.raw as a nuget dependency, so your app will use the latest version of SQLite instead of the one provided by the OS !
+See https://github.com/ericsink/SQLitePCL.raw/ for more information.
+
+ To use this nice feature, add this line into your ios "xxxx.csproj" file:
+
+    <UseSQLiteFrom>packaged_sqlite3</UseSQLiteFrom>
+    
+or to use a free ciphered database
+
+    <UseSQLiteFrom>packaged_sqlcipher</UseSQLiteFrom>
+
+For information:  
+iOS 9.2 is shipped with sqlite 3.8.10.2  
+iOS 8.4 is shipped with sqlite 3.8.5  
+
 # New Features compared to oysteinkrog
 
  Multiple primary key support		
