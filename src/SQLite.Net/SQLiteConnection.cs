@@ -1257,15 +1257,15 @@ namespace SQLite.Net
         [PublicAPI]
         public void RunInTransaction(Action action)
         {
+            var savePoint = SaveTransactionPoint();
             try
             {
-                var savePoint = SaveTransactionPoint();
                 action();
                 Release(savePoint);
             }
             catch (Exception)
             {
-                Rollback();
+                RollbackTo(savePoint, true);
                 throw;
             }
         }
