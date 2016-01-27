@@ -7,7 +7,7 @@ This is a fork of oysteinkrog fork which is a fork of the original sqlite-net li
 The iOS version now uses SQLitePCL.raw as a nuget dependency, so your app will use the latest version of SQLite instead of the one provided by the OS !
 See https://github.com/ericsink/SQLitePCL.raw/ for more information.
 
- To use this nice feature, add this line into your ios "xxxx.csproj" file:
+ To use this nice feature, add this line into your ios or android "xxxx.csproj" file:
 
     <UseSQLiteFrom>packaged_sqlite3</UseSQLiteFrom>
     
