@@ -566,6 +566,9 @@ namespace SQLite.Net
                                             expression.NodeType);
         }
 
+        /// <summary>
+        /// http://zetcode.com/db/sqlite/expressions/
+        /// </summary>
         private string GetSqlName(BinaryExpression expr)
         {
             var n = expr.NodeType;
@@ -621,6 +624,26 @@ namespace SQLite.Net
             if (n == ExpressionType.Subtract)
             {
                 return "-";
+            }
+            if (n == ExpressionType.Multiply)
+            {
+                return "*";
+            }
+            if (n == ExpressionType.Divide)
+            {
+                return "/";
+            }
+            if (n == ExpressionType.Modulo)
+            {
+                return "%";
+            }
+            if (n == ExpressionType.LeftShift)
+            {
+                return "<<";
+            }
+            if (n == ExpressionType.RightShift)
+            {
+                return ">>";
             }
 
             throw new NotSupportedException("Cannot get SQL for: " + n);
