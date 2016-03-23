@@ -225,56 +225,49 @@ namespace SQLite.Net
             {
                 throw new NotSupportedException("Must be a predicate");
             }
-                var lambda = (LambdaExpression) orderExpr;
+            var lambda = (LambdaExpression) orderExpr;
 
             MemberExpression mem;
 
-                var unary = lambda.Body as UnaryExpression;
-                if (unary != null && unary.NodeType == ExpressionType.Convert)
-                {
-                    mem = unary.Operand as MemberExpression;
-                }
-                else
-                {
-                    mem = lambda.Body as MemberExpression;
-                }
+            var unary = lambda.Body as UnaryExpression;
+            if (unary != null && unary.NodeType == ExpressionType.Convert)
+            {
+                mem = unary.Operand as MemberExpression;
+            }
+            else
+            {
+                mem = lambda.Body as MemberExpression;
+            }
 
             if (mem == null || (mem.Expression.NodeType != ExpressionType.Parameter))
-                {
+            {
                 throw new NotSupportedException("Order By does not support: " + orderExpr);
             }
+
             var q = Clone<T>();
-                    if (q._orderBys == null)
-                    {
-                        q._orderBys = new List<Ordering>();
-                    }
-                    q._orderBys.Add(new Ordering
-                    {
-                        ColumnName = Table.FindColumnWithPropertyName(mem.Member.Name).Name,
-                        Ascending = asc
-                    });
-                    return q;
-                }
+            if (q._orderBys == null)
+            {
+                q._orderBys = new List<Ordering>();
+            }
+            q._orderBys.Add(new Ordering
+            {
+                ColumnName = Table.FindColumnWithPropertyName(mem.Member.Name).Name,
+                Ascending = asc
+            });
+            return q;
+        }
 
         private void AddWhere([NotNull] Expression pred)
         {
             if (pred == null)
-            {
-                throw new ArgumentNullException("pred");
-            }
+                throw new ArgumentNullException(nameof(pred));
             if (_limit != null || _offset != null)
-            {
                 throw new NotSupportedException("Cannot call where after a skip or a take");
-            }
 
             if (_where == null)
-            {
                 _where = pred;
-            }
             else
-            {
                 _where = Expression.AndAlso(_where, pred);
-            }
         }
 
         [PublicAPI]

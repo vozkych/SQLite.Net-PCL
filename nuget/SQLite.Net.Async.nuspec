@@ -16,11 +16,9 @@
             This package provides Async extensions to the core SQLite.Net package.</summary>
         <releaseNotes>https://github.com/oysteinkrog/SQLite.Net-PCL/commits</releaseNotes>
         <tags>sqlite pcl sql database ios android windows metro winrt xamarin monotouch monodroid win32 windowsphone wp wp8 wp8.1</tags>
-        <dependencies>
-            <dependency id="SQLite.Net.Core-PCL" version="103.1.101"/>
-        </dependencies>
     </metadata>
     <files>
-        <file src="SQLite.Net.Async\SQLite.Net.Async.dll" target="lib\portable-win8+net45+wp8+wpa81+MonoAndroid1+MonoTouch1\SQLite.Net.Async.dll" />
+        <file src="SQLite.Net.Async\SQLite.Net.Async.dll" target="lib\portable-win8+net45+wp8+wpa81+MonoAndroid+Xamarin.iOS10\SQLite.Net.Async.dll" />
+        <file src="SQLite.Net\SQLite.Net.dll" target="lib\portable-win8+net45+wp8+wpa81+MonoAndroid+Xamarin.iOS10\SQLite.Net.dll" />
     </files>
 </package>
