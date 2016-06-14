@@ -1,19 +1,16 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/ujwbkk2bp3ipnoxg?svg=true)](https://ci.appveyor.com/project/oysteinkrog/sqlite-net-pcl)
+# Changes
 
-# Fork (0)
+The iOS and Android versions now uses SQLitePCL.raw as a nuget dependency, so your app will use the latest version of SQLite instead of the buggy one provided by the OS !
 
-This is a fork of oysteinkrog fork which is a fork of the original sqlite-net library (https://github.com/praeclarum/sqlite-net), which aims to improve the code quality by using modern technologies such as PCL (portable class library).
+See https://github.com/ericsink/SQLitePCL.raw/ for more information on how to use SQLitePCL.raw
 
-The iOS and Android versions now uses SQLitePCL.raw as a nuget dependency, so your app will use the latest version of SQLite instead of the one provided by the OS !
-See https://github.com/ericsink/SQLitePCL.raw/ for more information.
+Since SQLitePCL.raw 0.9 you have to add a new nuget package in your platform project: 
 
- To use this nice feature, add this line into your ios and android "xxxx.csproj" file:
+    SQLitePCL.plugin.sqlite3.ios_unified for ios
 
-    <UseSQLiteFrom>packaged_sqlite3</UseSQLiteFrom>
-    
-or to use a free ciphered database
+and add an init code:
 
-    <UseSQLiteFrom>packaged_sqlcipher</UseSQLiteFrom>
+                SQLitePCL.raw.SetProvider(new SQLitePCL.SQLite3Provider_internal());
 
 For information:  
 iOS 9.2 is shipped with sqlite 3.8.10.2  
@@ -43,8 +40,10 @@ iOS 8.4 is shipped with sqlite 3.8.5
  Signature: `IEnumerable<T> ExecuteSimpleQuery<T>(string query, params object[] args)`		
  Usage: `ExecuteSimpleQuery<string>("select 'drop table ' || name || ';' from sqlite_master where type = 'table'")`		
 
+# Fork
 
-# Fork (1)
+This is a fork of oysteinkrog fork which is a fork of the original sqlite-net library (https://github.com/praeclarum/sqlite-net), 
+which aims to improve the code quality by using modern technologies such as PCL (portable class library).
 
 This is a fork of the original sqlite-net library (https://github.com/praeclarum/sqlite-net), which aims to improve the code quality by using modern technologies such as PCL (portable class library).
 
