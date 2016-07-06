@@ -27,9 +27,6 @@ namespace SQLite.Net.Interop
     [PublicAPI]
     public interface ISQLiteApi
     {
-        //Result Open(byte[] filename, out IDbHandle db, int flags, IntPtr zvfs);
-        //        Result Open16(string filename, out IDbHandle db);
-
         Result Open(string filename, out IDbHandle db, int flags, string zvfs);
 
         ExtendedResult ExtendedErrCode(IDbHandle db);

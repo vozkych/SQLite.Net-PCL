@@ -82,7 +82,7 @@ namespace SQLite.Net.Platform.OSX
         {
             var internalDbHandle = (DbHandle) db;
             IntPtr stmt;
-            Result r = SQLiteApiOSXInternal.sqlite3_prepare_v2(internalDbHandle.DbPtr, query, query.Length, out stmt, IntPtr.Zero);
+            Result r = SQLiteApiOSXInternal.sqlite3_prepare16_v2(internalDbHandle.DbPtr, query, query.Length*2, out stmt, IntPtr.Zero);
             if (r != Result.OK)
             {
                 throw SQLiteException.New(r, Errmsg16(internalDbHandle));

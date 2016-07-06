@@ -189,6 +189,18 @@ namespace SQLite.Net
             BusyTimeout = TimeSpan.FromSeconds(0.1);
         }
 
+		private IColumnInformationProvider _columnInformationProvider;
+		[CanBeNull, PublicAPI]
+		public IColumnInformationProvider ColumnInformationProvider 
+		{
+			get { return _columnInformationProvider; }
+			set
+			{
+				_columnInformationProvider = value;
+				Orm.ColumnInformationProvider = _columnInformationProvider ?? new DefaultColumnInformationProvider ();
+			}
+		}
+
         [CanBeNull, PublicAPI]
         public IBlobSerializer Serializer { get; private set; }
 
@@ -305,7 +317,7 @@ namespace SQLite.Net
         private TableMapping CreateAndSetMapping(Type type, CreateFlags createFlags, IDictionary<string, TableMapping> mapTable)
             {
             var props = Platform.ReflectionService.GetPublicInstanceProperties(type);
-            var map = new TableMapping(type, props, createFlags);
+			var map = new TableMapping(type, props, createFlags, _columnInformationProvider);
             mapTable[type.FullName] = map;
             return map;
         }
@@ -629,12 +641,6 @@ namespace SQLite.Net
         [PublicAPI]
         public SQLiteCommand CreateCommand(string cmdText, params object[] args)
         {
-            return CreateCommandWithArgs(cmdText, args);
-        }
-
-        [PublicAPI]
-        public SQLiteCommand CreateCommandWithArgs(string cmdText, object[] args)
-        {
             if (!_open)
             {
                 throw SQLiteException.New(Result.Error, "Cannot create commands from unopened database");
@@ -648,7 +654,6 @@ namespace SQLite.Net
             }
             return cmd;
         }
-
 
         /// <summary>
         ///     Creates a SQLiteCommand given the command text (SQL) with arguments. Place a '?'
@@ -669,12 +674,6 @@ namespace SQLite.Net
         /// </returns>
         [PublicAPI]
         public int Execute(string query, params object[] args)
-        {
-            return ExecuteWithArgs(query, args);
-        }
-
-        [PublicAPI]
-        public int ExecuteWithArgs(string query, object[] args)
         {
             var cmd = CreateCommand(query, args);
 
@@ -1806,7 +1805,7 @@ namespace SQLite.Net
             var map = GetMapping(typeof (T));
             if (map.PK == null)
             {
-                throw new NotSupportedException("Cannot delete " + map.TableName + ": it has no PK");
+                throw new NotSupportedException("Cannot delete from " + map.TableName + ": it has no PK");
             }
             var obj = objects.ToList();
 
@@ -1818,7 +1817,7 @@ namespace SQLite.Net
             else
             {
                 //Optimization: delete all objects in one request.
-                //Won't work if there are too much objects, but who cares ...
+                //Note: won't work if there are too much objects (command string length will be over max command size)
                 var pk = map.PK;
                 var keyObjects = obj.Select(o => pk.GetValue(o)).ToList();
                 if (keyObjects.Count > 0)
@@ -1860,7 +1859,7 @@ namespace SQLite.Net
                 throw new ArgumentException("primaryKeys array length can not be greater than the number of primary keys");
 
             var q = string.Format("delete from \"{0}\" where {1}", map.TableName, map.PkWhereSqlForPartialKeys(pks.Length));
-            return ExecuteWithArgs(q, pks);
+            return Execute(q, pks);
         }
 
         /// <summary>
@@ -1885,7 +1884,7 @@ namespace SQLite.Net
 
             var keyListParams = String.Join(",", Enumerable.Repeat('?', theKeys.Length));
             var q = string.Format("delete from \"{0}\" where \"{1}\" in ({2})", map.TableName, map.PKs[0].Name, keyListParams);
-            return ExecuteWithArgs(q, theKeys);
+            return Execute(q, theKeys);
         }
 
         /// <summary>

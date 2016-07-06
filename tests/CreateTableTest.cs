@@ -98,16 +98,17 @@ namespace SQLite.Net.Tests
             public string Name { get; set; }
         }
 
-        [Test]
-        public void CheckMaxLengthAttributesRespected()
-        {
-            var db = new TestDb();
+        //Test removed: sqlite does not use char lenght, it stores any string as 'text'.
+        //[Test]
+        //public void CheckMaxLengthAttributesRespected()
+        //{
+        //    var db = new TestDb();
 
-            db.CreateTable<ObjWithMaxLength>();
+        //    db.CreateTable<ObjWithMaxLength>();
 
-            string creationString = db.ExecuteScalar<string>("select min(sql) from sqlite_master");
-            Assert.That(creationString, Is.StringContaining("varchar(20)"));
-        }
+        //    string creationString = db.ExecuteScalar<string>("select min(sql) from sqlite_master");
+        //    Assert.That(creationString, Is.StringContaining("varchar(20)"));
+        //}
 
 
         public class TweetStringAttribute : MaxLengthAttribute
@@ -125,15 +126,16 @@ namespace SQLite.Net.Tests
             public string Sender { get; set; }
         }
 
-        [Test]
-        public void CheckMaxLengthAttributesSubtypesRespected()
-        {
-            var db = new TestDb();
+        //Test removed: sqlite does not use char lenght, it stores any string as 'text'.
+        //[Test]
+        //public void CheckMaxLengthAttributesSubtypesRespected()
+        //{
+        //    var db = new TestDb();
 
-            db.CreateTable<Tweet>();
+        //    db.CreateTable<Tweet>();
 
-            string creationString = db.ExecuteScalar<string>("select min(sql) from sqlite_master");
-            Assert.That(creationString, Is.StringContaining("varchar(140)"));
-        }
+        //    string creationString = db.ExecuteScalar<string>("select min(sql) from sqlite_master");
+        //    Assert.That(creationString, Is.StringContaining("varchar(140)"));
+        //}
     }
 }

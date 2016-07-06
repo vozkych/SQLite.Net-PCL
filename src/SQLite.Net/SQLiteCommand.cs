@@ -162,7 +162,7 @@ namespace SQLite.Net
                     }
                     else
                     {
-                        cols[i] = new TableMapping.Column { ColumnType = type };
+                        cols[i] = map.CreateColumn(type);
                     }
                 }
 

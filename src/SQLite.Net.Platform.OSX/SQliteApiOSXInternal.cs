@@ -50,11 +50,9 @@ namespace SQLite.Net.Platform.OSX
         [DllImport("libsqlite3_for_net", EntryPoint = "sqlite3_changes", CallingConvention = CallingConvention.Cdecl)]
         public static extern int sqlite3_changes(IntPtr db);
 
-        [DllImport("libsqlite3_for_net", EntryPoint = "sqlite3_prepare_v2", CallingConvention = CallingConvention.Cdecl)
+        [DllImport("libsqlite3_for_net", EntryPoint = "sqlite3_prepare16_v2", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)
         ]
-        public static extern Result sqlite3_prepare_v2(IntPtr db, [MarshalAs(UnmanagedType.LPStr)] string sql,
-            int numBytes,
-            out IntPtr stmt, IntPtr pzTail);
+        public static extern Result sqlite3_prepare16_v2(IntPtr db, string sql, int numBytes, out IntPtr stmt, IntPtr pzTail);
 
         [DllImport("libsqlite3_for_net", EntryPoint = "sqlite3_step", CallingConvention = CallingConvention.Cdecl)]
         public static extern Result sqlite3_step(IntPtr stmt);

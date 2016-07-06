@@ -41,6 +41,13 @@ namespace SQLite.Net
         public const string ImplicitPkName = "Id";
         public const string ImplicitIndexSuffix = "Id";
 
+		private static IColumnInformationProvider _columnInformationProvider = new DefaultColumnInformationProvider();
+		public static IColumnInformationProvider ColumnInformationProvider 
+		{
+			get { return _columnInformationProvider; }
+			set { _columnInformationProvider = value; }
+		}
+
         internal static string SqlDecl(TableMapping.Column p, bool storeDateTimeAsTicks, IBlobSerializer serializer,
             IDictionary<Type, string> extraTypeMappings)
         {
@@ -68,6 +75,7 @@ namespace SQLite.Net
                 return extraMapping;
             }
 
+            //http://www.sqlite.org/datatype3.html
             if (clrType == typeof (bool) || clrType == typeof (byte) || clrType == typeof (ushort) ||
                 clrType == typeof (sbyte) || clrType == typeof (short) || clrType == typeof (int) ||
                 clrType == typeof (uint) || clrType == typeof (long) ||
@@ -83,23 +91,17 @@ namespace SQLite.Net
             {
                 return "integer";
             }
-            if (clrType == typeof (float) || clrType == typeof (double) || 
+            if (clrType == typeof (float) || clrType == typeof (double) || clrType == typeof (decimal) ||
                 interfaces.Contains(typeof (ISerializable<float>)) ||
-                interfaces.Contains(typeof (ISerializable<double>)))
+                interfaces.Contains(typeof (ISerializable<double>)) ||
+                interfaces.Contains(typeof (ISerializable<decimal>)))
             {
                 return "real";
             }
-            if (clrType == typeof (decimal) ||
-                interfaces.Contains(typeof (ISerializable<decimal>)))
-            {
-                return "numeric";
-            }
-            if (clrType == typeof (string) || clrType == typeof(XElement)
-            || interfaces.Contains(typeof (ISerializable<string>))
-            || interfaces.Contains(typeof (ISerializable<XElement>))
+            if (clrType == typeof (string) || interfaces.Contains(typeof (ISerializable<string>))
+            || clrType == typeof(XElement) || interfaces.Contains(typeof (ISerializable<XElement>))
             )
             {
-             //SQLite ignores the length //See http://www.sqlite.org/datatype3.html
                 return "text";
             }
             if (clrType == typeof (TimeSpan) || interfaces.Contains(typeof (ISerializable<TimeSpan>)))
@@ -110,7 +112,7 @@ namespace SQLite.Net
             {
                 return storeDateTimeAsTicks ? "integer" : "numeric";
             }
-            if (clrType == typeof (DateTimeOffset))
+            if (clrType == typeof (DateTimeOffset) || interfaces.Contains(typeof (ISerializable<DateTimeOffset>)))
             {
                 return "integer";
             }
@@ -135,65 +137,39 @@ namespace SQLite.Net
 
         internal static bool IsPK(MemberInfo p)
         {
-            return p.GetCustomAttributes<PrimaryKeyAttribute>().Any();
+			return ColumnInformationProvider.IsPK (p);
         }
 
         internal static string Collation(MemberInfo p)
         {
-            foreach (var attribute in p.GetCustomAttributes<CollationAttribute>())
-            {
-                return attribute.Value;
-            }
-            return string.Empty;
+			return ColumnInformationProvider.Collation (p);
         }
 
         internal static bool IsAutoInc(MemberInfo p)
         {
-            return p.GetCustomAttributes<AutoIncrementAttribute>().Any();
+			return ColumnInformationProvider.IsAutoInc (p);
         }
 
         internal static IEnumerable<IndexedAttribute> GetIndices(MemberInfo p)
         {
-            return p.GetCustomAttributes<IndexedAttribute>();
+			return ColumnInformationProvider.GetIndices (p);
         }
 
         [CanBeNull]
         internal static int? MaxStringLength(PropertyInfo p)
         {
-            foreach (var attribute in p.GetCustomAttributes<MaxLengthAttribute>())
-            {
-                return attribute.Value;
-            }
-            return null;
+			return ColumnInformationProvider.MaxStringLength (p);
         }
 
         [CanBeNull]
         internal static object GetDefaultValue(PropertyInfo p)
         {
-            foreach (var attribute in p.GetCustomAttributes<DefaultAttribute>())
-            {
-                try
-                {
-                    if (!attribute.UseProperty)
-                    {
-                        return Convert.ChangeType(attribute.Value, p.PropertyType);
-                    }
-
-                    var obj = Activator.CreateInstance(p.DeclaringType);
-                    return p.GetValue(obj);
-                }
-                catch (Exception exception)
-                {
-                    throw new Exception("Unable to convert " + attribute.Value + " to type " + p.PropertyType, exception);
-                }
-            }
-            return null;
+			return ColumnInformationProvider.GetDefaultValue (p);
         }
 
         internal static bool IsMarkedNotNull(MemberInfo p)
         {
-            var attrs = p.GetCustomAttributes<NotNullAttribute>(true);
-            return attrs.Any();
+			return ColumnInformationProvider.IsMarkedNotNull (p);
         }
     }
 }

@@ -1,6 +1,6 @@
 //
 // Copyright (c) 2012 Krueger Systems, Inc.
-// Copyright (c) 2013 Ã˜ystein Krog (oystein.krog@gmail.com)
+// Copyright (c) 2013 Øystein Krog (oystein.krog@gmail.com)
 // 
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -428,6 +428,10 @@ namespace SQLite.Net
                 else if (call.Method.Name == "ToUpper")
                 {
                     sqlCall.AppendFormat("(upper({0}))", obj.CommandText);
+                }
+                else if (call.Method.Name == "Replace" && args.Length == 2)
+                {
+                    sqlCall.AppendFormat("(replace({0}, {1}, {2}))", obj.CommandText, args[0].CommandText, args[1].CommandText);
                 }
                 else
                 {
