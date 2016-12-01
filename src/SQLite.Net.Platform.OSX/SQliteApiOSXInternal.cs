@@ -172,6 +172,9 @@ namespace SQLite.Net.Platform.OSX
         [DllImport("libsqlite3_for_net", EntryPoint = "sqlite3_libversion_number", CallingConvention = CallingConvention.Cdecl)]
         public static extern int sqlite3_libversion_number();
 
+        [DllImport("libsqlite3_for_net", EntryPoint = "sqlite3_threadsafe", CallingConvention = CallingConvention.Cdecl)]
+        public static extern int sqlite3_threadsafe();
+
         [DllImport("libsqlite3_for_net", EntryPoint = "sqlite3_sourceid", CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr sqlite3_sourceid();
 

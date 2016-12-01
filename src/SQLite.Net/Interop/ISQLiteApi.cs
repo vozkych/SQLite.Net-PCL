@@ -31,7 +31,8 @@ namespace SQLite.Net.Interop
 
         ExtendedResult ExtendedErrCode(IDbHandle db);
         int LibVersionNumber();
-        string SourceID();
+	    int Threadsafe();
+		string SourceID();
         Result EnableLoadExtension(IDbHandle db, int onoff);
         Result Close(IDbHandle db);
         Result Initialize();

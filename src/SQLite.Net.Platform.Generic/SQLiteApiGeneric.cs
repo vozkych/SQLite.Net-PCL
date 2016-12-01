@@ -34,7 +34,12 @@ namespace SQLite.Net.Platform.Generic
             return SQLiteApiGenericInternal.sqlite3_libversion_number();
         }
 
-        public string SourceID()
+		public int Threadsafe()
+		{
+			return SQLiteApiGenericInternal.sqlite3_threadsafe();
+		}
+
+		public string SourceID()
         {            
 			return Marshal.PtrToStringAnsi(SQLiteApiGenericInternal.sqlite3_sourceid());
         }        

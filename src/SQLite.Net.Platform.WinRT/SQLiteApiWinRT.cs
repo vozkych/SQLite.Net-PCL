@@ -157,7 +157,13 @@ namespace SQLite.Net.Platform.WinRT
             return SQLite3.sqlite3_libversion_number();
         }
 
-        public string SourceID()
+		public int Threadsafe()
+		{
+			return SQLite3.sqlite3_threadsafe();
+		}
+
+
+		public string SourceID()
         {
             return Marshal.PtrToStringAnsi(SQLite3.sqlite3_sourceid());  
         }        
@@ -456,7 +462,10 @@ namespace SQLite.Net.Platform.WinRT
         [DllImport("sqlite3", EntryPoint = "sqlite3_libversion_number", CallingConvention = CallingConvention.Cdecl)]
         public static extern int sqlite3_libversion_number();
 
-        [DllImport("sqlite3", EntryPoint = "sqlite3_sourceid", CallingConvention = CallingConvention.Cdecl)]
+		[DllImport("sqlite3", EntryPoint = "sqlite3_threadsafe", CallingConvention = CallingConvention.Cdecl)]
+		public static extern int sqlite3_threadsafe();
+
+		[DllImport("sqlite3", EntryPoint = "sqlite3_sourceid", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr sqlite3_sourceid();
 
         #region Backup

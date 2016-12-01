@@ -39,8 +39,13 @@ namespace SQLite.Net.Platform.Win32
         {
             return SQLiteApiWin32Internal.sqlite3_libversion_number();
         }
-        
-        public string SourceID()
+
+		public int Threadsafe()
+		{
+			return SQLiteApiWin32Internal.sqlite3_threadsafe();
+		}
+
+		public string SourceID()
         {
 			return Marshal.PtrToStringAnsi(SQLiteApiWin32Internal.sqlite3_sourceid());            
         }                

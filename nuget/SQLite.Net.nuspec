@@ -4,27 +4,31 @@
         <id>SQLite.Net-PCL</id>
         <version>3.1.1</version>
         <title>SQLite.Net PCL</title>
-        <authors>Benjamin Mayrargue, Øystein Krog,Frank Krueger,Tim Heuer</authors>
+        <authors>Benjamin Mayrargue</authors>
         <owners>Benjamin Mayrargue</owners>
-        <licenseUrl>https://raw.github.com/oysteinkrog/SQLite.Net-PCL/master/LICENSE.txt</licenseUrl>
-        <projectUrl>https://github.com/oysteinkrog/SQLite.Net-PCL</projectUrl>
+        <licenseUrl>https://raw.github.com/softlion/SQLite.Net-PCL/master/LICENSE.txt</licenseUrl>
+        <projectUrl>https://github.com/softlion/SQLite.Net-PCL</projectUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>
-        <description>SQLite.Net PCL is an open source, minimal library to allow .NET and Mono applications to store data in SQLite databases.
-            This is a fork of the original sqlite-net project, which aims to cleanup/improve the code and deliver the package as PCL assemblies with some additional platform-specific implementations.
-            This package is compatible with the following .net platforms: Xamarin.iOS (Classic), Xamarin.iOS (Unified), Xamarin.Android, Windows Phone 8.1, Windows Phone 8.0, Windows 8.1, Windows 8.0, Win32, Generic, PCL(net4+sl4+wp7+win8+monotouch+MonoAndroid)</description>
+        <description>SQLite.Net PCL is an open source, minimal library to allow .NET and Mono applications to store data in SQLite databases.</description>
         <summary>A .NET client library to access SQLite embedded database files in a LINQ manner.</summary>
-        <releaseNotes>https://github.com/oysteinkrog/SQLite.Net-PCL/commits</releaseNotes>
-        <tags>sqlite pcl sql database ios android windows metro winrt xamarin monotouch monodroid win32 windowsphone wp wp8 wp8.1</tags>
+        <releaseNotes>https://github.com/softlion/SQLite.Net-PCL/commits</releaseNotes>
+        <tags>sqlite xamarin win32 wp uwp</tags>
         <dependencies>
             <!--<group targetFramework="wp8">
                 <dependency id="sqlite-net-wp8" version="3.8.5"/>
             </group>-->
           <group targetFramework="Xamarin.iOS">
-            <dependency id="SQLitePCLRaw.bundle_e_sqlite3" version="1.1.0" />
+            <dependency id="SQLitePCLRaw.bundle_e_sqlite3" version="1.1.1" />
           </group>
           <group targetFramework="MonoAndroid">
-            <dependency id="SQLitePCLRaw.bundle_e_sqlite3" version="1.1.0" />
+            <dependency id="SQLitePCLRaw.bundle_e_sqlite3" version="1.1.1" />
           </group>
+
+          <group targetFramework="net45">
+            <dependency id="SQLite.Native" version="3.12.3" />
+            <dependency id="System.Data.SQLite.Core" version="1.0.103" />
+          </group>
+
         </dependencies>
     </metadata>
     <files>

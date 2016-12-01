@@ -30,7 +30,13 @@ namespace SQLite.Net.Platform.WindowsPhone8
 //            return Sqlite3.sqlite3_libversion_number();
         }
 
-        public string SourceID()
+		public int Threadsafe()
+		{
+			// not supported
+			return 0;
+		}
+
+		public string SourceID()
         {
             // not supported
             return String.Empty;

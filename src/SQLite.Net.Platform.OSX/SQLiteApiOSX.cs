@@ -33,8 +33,13 @@ namespace SQLite.Net.Platform.OSX
         {
             return SQLiteApiOSXInternal.sqlite3_libversion_number();
         }
-        
-        public string SourceID()
+
+		public int Threadsafe()
+		{
+			return SQLiteApiOSXInternal.sqlite3_threadsafe();
+		}
+
+		public string SourceID()
         {
 			return Marshal.PtrToStringAuto(SQLiteApiOSXInternal.sqlite3_sourceid());            
         }                

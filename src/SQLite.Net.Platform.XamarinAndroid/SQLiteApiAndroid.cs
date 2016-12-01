@@ -27,7 +27,12 @@ namespace SQLite.Net.Platform.XamarinAndroid
             return raw.sqlite3_libversion_number();
         }
 
-        public string SourceID()
+	    public int Threadsafe()
+	    {
+			return raw.sqlite3_threadsafe();
+		}
+
+		public string SourceID()
         {
             return raw.sqlite3_sourceid();
         }
