@@ -118,8 +118,15 @@ namespace SQLite.Net
         [PublicAPI]
         protected virtual IDbStatement Prepare()
         {
-            var stmt = Connection.Platform.SQLiteApi.Prepare2(Connection.Handle, CommandText);
-            return stmt;
+            try
+            {
+                var stmt = Connection.Platform.SQLiteApi.Prepare2(Connection.Handle, CommandText);
+                return stmt;
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Sqlite prepareinsert failed for sql: {CommandText}", e);
+            }
         }
 
         private void Dispose(bool disposing)

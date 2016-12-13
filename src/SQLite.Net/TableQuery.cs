@@ -421,6 +421,18 @@ namespace SQLite.Net
                 {
                     sqlCall.AppendFormat("({0} = ({1}))", obj.CommandText, args[0].CommandText);
                 }
+                else if (call.Method.Name == "Trim")
+                {
+                    sqlCall.AppendFormat("(trim({0}))", obj.CommandText);
+                }
+                else if (call.Method.Name == "TrimStart")
+                {
+                    sqlCall.AppendFormat("(ltrim({0}))", obj.CommandText);
+                }
+                else if (call.Method.Name == "TrimEnd")
+                {
+                    sqlCall.AppendFormat("(rtrim({0}))", obj.CommandText);
+                }
                 else if (call.Method.Name == "ToLower")
                 {
                     sqlCall.AppendFormat("(lower({0}))", obj.CommandText);

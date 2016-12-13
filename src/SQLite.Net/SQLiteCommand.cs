@@ -276,9 +276,16 @@ namespace SQLite.Net
 
         private IDbStatement Prepare()
         {
-            var stmt = _sqlitePlatform.SQLiteApi.Prepare2(_conn.Handle, CommandText);
-            BindAll(stmt);
-            return stmt;
+            try
+            {
+                var stmt = _sqlitePlatform.SQLiteApi.Prepare2(_conn.Handle, CommandText);
+                BindAll(stmt);
+                return stmt;
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"Sqlite prepare failed for sql: {CommandText}", e);
+            }
         }
 
         private void Finalize(IDbStatement stmt)
