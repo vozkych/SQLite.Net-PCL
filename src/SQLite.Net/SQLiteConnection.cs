@@ -1704,23 +1704,40 @@ namespace SQLite.Net
             }
 
             var cols = from p in map.Columns
-                where p != pk
-                select p;
+                       where !(from pkey in map.PKs
+                               select pkey).Contains(p)
+                       select p;
+
             var vals = from c in cols
-                select c.GetValue(obj);
-            var ps = new List<object>(vals)
+                       select c.GetValue(obj);
+
+            var pkeys = from pkey in map.PKs
+                        select pkey.GetValue(obj);
+
+            var ps = vals.Concat(pkeys).ToList();
+
+            var q = "";
+
+            if (map.PKs.Count > 1)
             {
-                pk.GetValue(obj)
-            };
-            var q = string.Format("update \"{0}\" set {1} where {2} = ? ", map.TableName,
-                string.Join(",", (from c in cols
-                    select "\"" + c.Name + "\" = ? ").ToArray()), pk.Name);
+                q = string.Format("update \"{0}\" set {1} where {2} ", map.TableName,
+                                                                       string.Join(",", (from c in cols select "\"" + c.Name + "\" = ? ").ToArray()),
+                                                                       map.PkWhereSql);
+            }
+            else
+            {
+                q = string.Format("update \"{0}\" set {1} where {2} = ? ", map.TableName,
+                                                                       string.Join(",", (from c in cols select "\"" + c.Name + "\" = ? ").ToArray()),
+                                                                       pk.Name);
+            }
+
             try
             {
                 rowsAffected = Execute(q, ps.ToArray());
             }
             catch (SQLiteException ex)
             {
+
                 if (ex.Result == Result.Constraint && Platform.SQLiteApi.ExtendedErrCode(Handle) == ExtendedResult.ConstraintNotNull)
                 {
                     throw NotNullConstraintViolationException.New(ex, map, obj);
