@@ -29,13 +29,9 @@ copy /y ..\src\SQLite.Net.Platform.XamarinAndroid\bin\Release\SQLite.Net.Platfor
 mkdir SQLite.Net.Platform.XamarinIOS.Unified
 copy /y ..\src\SQLite.Net.Platform.XamarinIOS.Unified\bin\Release\SQLite.Net.Platform.XamarinIOS.Unified.dll SQLite.Net.Platform.XamarinIOS.Unified
 
-
-
 @mkdir output
 del /q	output\*.*
 nuget pack SQLite.Net.nuspec -o output -Version %version%
 nuget pack SQLite.Net.Async.nuspec -o output -Version %version%
 
-
-nuget push output\*.nupkg -Source http://nugets.vapolia.fr/
-
+REM nuget push output\*.nupkg BpV246474 -Source http://swr.vozkych.local/nuget/ng-bpv/
